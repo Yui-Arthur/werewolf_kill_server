@@ -8,5 +8,54 @@ module.exports = {
         "optionsSuccessStatus"  : 204,
         "credentials"           : true
         
+    },
+    default_setting :{
+        6 : {
+            "player_num": 6,
+            "operation_time" : 30,
+            "dialogue_time" : 60,
+            "seer" : 1,
+            "witch" : 1,
+            "village" : 2,
+            "werewolf" : 2,
+            "hunter" : 0
+        },
+        7 : {
+            "player_num": 7,
+            "operation_time" : 30,
+            "dialogue_time" : 60,
+            "seer" : 1,
+            "witch" : 1,
+            "village" : 2,
+            "werewolf" : 2,
+            "hunter" : 1
+        },
+        8 : {
+            "player_num": 8,
+            "operation_time" : 30,
+            "dialogue_time" : 60,
+            "seer" : 1,
+            "witch" : 1,
+            "village" : 2,
+            "werewolf" : 3,
+            "hunter" : 1
+        },
+        9 : {
+            "player_num": 9,    
+            "operation_time" : 30,
+            "dialogue_time" : 60,
+            "seer" : 1,
+            "witch" : 1,
+            "village" : 3,
+            "werewolf" : 3,
+            "hunter" : 1 
+        }
+    },
+    indexToRole : {
+        "seer" : 0,
+        "witch" : 1,
+        "village" : 2,
+        "werewolf" : 3,
+        "hunter" : 4
     }
 }

@@ -12,9 +12,9 @@ global.room_list = {
         "room_user": [
             "yui"
         ],
-        "game_setting": {
-            "player_num": 7
-        }
+        "room_state" : "ready",
+        "game_setting": config.default_setting[7]
+        
     }
 };
 

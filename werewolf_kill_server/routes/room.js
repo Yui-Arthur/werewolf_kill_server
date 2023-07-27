@@ -2,6 +2,10 @@ var express = require('express');
 var room = require('../models/room');
 var router = express.Router();
 
+/**
+ *  get all rooms
+ *  rerturn all room info
+ * */ 
 router.route('/api/room')
     .get(async function(req, res) {
         try{
@@ -11,39 +15,69 @@ router.route('/api/room')
             res.sendStatus(500)
         }
     })
+
 router.route('/api/room/:room_name')
+    /**
+     *  get specific room
+     *  rerturn room info
+     * */ 
     .get(async function(req, res) {
         try{
-            res.status(200).json(global.room_list[req.params.room_name])
-        } catch(e){
-            console.log(e);
-            res.sendStatus(500)
-        }
-    })
-    .post(async function(req, res) {
-        try{
-            if(!await room.check_room(req.params.room_name)){
+            if(await room.check_room(req.params.room_name))
+                res.status(200).json(global.room_list[req.params.room_name])
+            else
                 res.status(404).json({
                     "Error" : "Room not found"
                 })
-                
-            }else{
-                if(await room.game_setting(req.header('Authorization') , req.params.room_name , req.body))
-                    res.sendStatus(200)
-                else
-                    res.status(500).json({
-                        "Error" : "jwt error"
-                    })
-            }
             
-
+        } catch(e){
+            console.log(e);
+            res.sendStatus(500)
+        }
+    })
+    /**
+     *  setting specific room
+     *  rerturn OK or Error
+     * */ 
+    .post(async function(req, res) {
+        try{
+            result = await room.game_setting(req.header('Authorization') , req.params.room_name , req.body)
+            if(result.status)
+                res.sendStatus(200)
+            else
+                res.status(500).json({
+                    "Error" : result.log
+                })
+            
         } catch(e){
             console.log(e);
             res.sendStatus(500)
         }
     })
 
+router.route('/api/room/:room_name/:player_number')
+    .get(async function(req, res) {
+            try{
+                result = await room.change_player_number(req.header('Authorization') , req.params.room_name , req.params.player_number)
+                if(result.status)
+                    res.sendStatus(200)
+                else
+                    res.status(500).json({
+                        "Error" : result.log
+                    })
+                
+            } catch(e){
+                console.log(e);
+                res.sendStatus(500)
+            }
+        
+    })
+
 router.route('/api/create_room')
+    /**
+     *  create new room
+     *  rerturn random room number & leader user_token
+     * */ 
     .get(async function(req, res) {
         try{
             
@@ -66,21 +100,26 @@ router.route('/api/create_room')
     })
 
 router.route('/api/join_room/:room_name')
+    /**
+     *  join room 
+     *  rerturn user_token
+     * */ 
     .get(async function(req, res) {
         try{
             
-            if(await room.check_room(req.params.room_name) && !await room.is_full(req.params.room_name)){
-                user_token = await room.join_room(req.body.user_name , req.params.room_name)
-                
+            
+            result = await room.join_room(req.body.user_name , req.params.room_name)
+            
+            if(result.status)
                 res.status(200).json({
-                    "user_token" : user_token
+                    "user_token" : result.token
                 })
-            }
-            else{
-                res.status(404).json({
-                    "Error" : "Room not found"
+            
+            else
+                res.status(500).json({
+                    "Error" : result.log
                 })
-            }
+            
             
         } catch(e){
             console.log(e);
@@ -91,22 +130,20 @@ router.route('/api/join_room/:room_name')
     })
 
 router.route('/api/quit_room/:room_name')
+    /**
+     *  quit room or kick someount out of room
+     *  rerturn OK or Error
+     * */ 
     .get(async function(req, res) {
         try{
             
-            if(await room.check_room(req.params.room_name)){
-                if(await room.quit_room(req.params.room_name , req.body.user_name , req.header('Authorization')))
-                    res.sendStatus(200)
-                else
-                    res.status(500).json({
-                        "Error" : "jwt error"
-                    })
-            }
-            else{
-                res.status(404).json({
-                    "Error" : "Room not found"
+            result = await room.quit_room(req.params.room_name , req.body.user_name , req.header('Authorization'))
+            if(result.status)
+                res.sendStatus(200)
+            else
+                res.status(500).json({
+                    "Error" : result.log
                 })
-            }
             
         } catch(e){
             console.log(e);
@@ -116,10 +153,23 @@ router.route('/api/quit_room/:room_name')
         
     })
 
-// router.route('/api/start_game/:room_name')
-//     .get(async function(req,res)){
-        
-//     }
+router.route('/api/start_game/:room_name')
+    .get(async function(req,res){
+        try{
+            
+            result = await  room.start_game(req.params.room_name , req.header('Authorization'))
+            if(result.status)
+                res.sendStatus(200)
+            else
+                res.status(500).json({
+                    "Error" : result.log
+                })
+
+        } catch(e){
+            console.log(e);
+            res.sendStatus(500)
+        }
+    })
 
 
 module.exports = router;
