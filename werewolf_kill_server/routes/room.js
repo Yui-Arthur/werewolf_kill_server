@@ -18,7 +18,7 @@ router.route('/api/room')
 
 router.route('/api/room/:room_name')
     /**
-     *  get specific room
+     *  get specific room info
      *  rerturn room info
      * */ 
     .get(async function(req, res) {
@@ -73,7 +73,7 @@ router.route('/api/room/:room_name/:player_number')
         
     })
 
-router.route('/api/create_room')
+router.route('/api/create_room/:user_name')
     /**
      *  create new room
      *  rerturn random room number & leader user_token
@@ -81,7 +81,7 @@ router.route('/api/create_room')
     .get(async function(req, res) {
         try{
             
-            ret = await room.create_room(req.body.user_name)
+            ret = await room.create_room(req.params.user_name)
             room_name = ret[0]
             user_token =  ret[1]
     
@@ -99,7 +99,7 @@ router.route('/api/create_room')
         
     })
 
-router.route('/api/join_room/:room_name')
+router.route('/api/join_room/:room_name/:user_name')
     /**
      *  join room 
      *  rerturn user_token
@@ -108,7 +108,7 @@ router.route('/api/join_room/:room_name')
         try{
             
             
-            result = await room.join_room(req.body.user_name , req.params.room_name)
+            result = await room.join_room(req.params.user_name , req.params.room_name)
             
             if(result.status)
                 res.status(200).json({
@@ -129,7 +129,7 @@ router.route('/api/join_room/:room_name')
         
     })
 
-router.route('/api/quit_room/:room_name')
+router.route('/api/quit_room/:room_name/:user_name')
     /**
      *  quit room or kick someount out of room
      *  rerturn OK or Error
@@ -137,7 +137,7 @@ router.route('/api/quit_room/:room_name')
     .get(async function(req, res) {
         try{
             
-            result = await room.quit_room(req.params.room_name , req.body.user_name , req.header('Authorization'))
+            result = await room.quit_room(req.params.room_name , req.params.user_name , req.header('Authorization'))
             if(result.status)
                 res.sendStatus(200)
             else

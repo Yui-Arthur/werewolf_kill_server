@@ -1,8 +1,6 @@
-var bcrypt = require('bcrypt');
-var jwt = require('jsonwebtoken')
 var config = require('../conf')
-const saltRounds = 10;
 var jwt_op = require('./jwt')
+var game = require('./game')
 var randomstring = require("randomstring");
 
 module.exports = {
@@ -129,8 +127,8 @@ module.exports = {
         var role_list = Array(5) 
         for (const [key, value] of Object.entries(game_setting)) 
         {
-            if(config.indexToRole.hasOwnProperty(key))
-                role_list[config.indexToRole[key]] = value
+            if(config.roleToIndex.hasOwnProperty(key))
+                role_list[config.roleToIndex[key]] = value
         }
         var grpc_result = true
         if(! grpc_result)
@@ -153,7 +151,51 @@ module.exports = {
         if(!await jwt_op.verify_room_jwt(token , room_name , true))
             return {status: false , log: "jwt error"}
 
+        if(global.room_list[room_name]['room_user'].length != global.room_list[room_name]['game_setting']['player_num'])
+            return {status: false , log: "number of people error"}
+
         global.room_list[room_name]['room_state'] = "started"
+
+        
+        /** grpc game start**/
+        var role_list = Array(5) 
+        for (const [key, value] of Object.entries(global.room_list[room_name]["game_setting"])) 
+        {
+            if(config.roleToIndex.hasOwnProperty(key))
+                role_list[config.roleToIndex[key]] = value
+        }
+
+        var grpc_result = [1 , 2 , 1 , 3 , 4 , 5 , 1]
+        
+        global.game_list[room_name] = {
+            'stage' : "Day 0",
+            'information' : [],
+            'player_num' : global.room_list[room_name]['game_setting']['player_num'],
+            'operation_time' : global.room_list[room_name]['game_setting']['operation_time'],
+            'dialogue_time' : global.room_list[room_name]['game_setting']['dialogue_time'],
+            'player' : {},
+        }
+        
+        console.log(global.game_list[room_name] )
+        // global.game_list[room_name]['timer'] = setTimeout(game.next_stage , global.room_list[room_name]['game_setting']['operation_time'] * 1000 , room_name)
+        // global.game_list[room_name]['timer'] = 
+        setTimeout(game.next_stage , 1 , room_name , game.get_vote_info)
+        
+
+        for( const [idx, user_name] of global.room_list[room_name]['room_user'].entries()){
+            global.game_list[room_name]['player'][idx] = {
+                "user_name" : user_name,
+                "user_role" : config.indexToRole[grpc_result[idx]],
+                "user_state" : "alive", 
+                "user_position" : [0,0]
+            }
+        }
+        
+        // console.log(global.game_list[room_name]['player'])
+
+        /**********************************/  
+        //
+
         return {status: true,  log:"ok"}
     }
 

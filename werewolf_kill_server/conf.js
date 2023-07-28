@@ -51,11 +51,18 @@ module.exports = {
             "hunter" : 1 
         }
     },
-    indexToRole : {
+    roleToIndex : {
         "seer" : 0,
         "witch" : 1,
         "village" : 2,
         "werewolf" : 3,
         "hunter" : 4
+    },
+    indexToRole : {
+        0 : "seer",
+        1 : "witch",
+        2 : "village",
+        3 : "werewolf",
+        4 : "hunter"
     }
 }

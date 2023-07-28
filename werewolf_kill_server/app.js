@@ -3,6 +3,7 @@ var bodyparser = require('body-parser');
 var cors = require('cors');
 var config = require('./conf');
 var room = require('./routes/room');
+var game = require('./routes/game');
 var app = express();
 
 global.room_list = {
@@ -10,18 +11,39 @@ global.room_list = {
         "room_name": "TESTROOM",
         "room_leader": "yui",
         "room_user": [
-            "yui"
+            "yui" , "pinyu" , "yeecheen" , "sunny" , "a" , "b" ,"c"
         ],
         "room_state" : "ready",
-        "game_setting": config.default_setting[7]
-        
+        "game_setting": config.default_setting[7],
     }
 };
+
+global.game_list = {
+    "TESTROOM" : {
+        "player" :{
+            0 : {
+                "user_name" : "yui",
+                "user_role" : "seer" ,
+                "state" : "alive"      
+            },
+    
+            1 : {
+                "user_name" : "pinyu",
+                "user_role" : "village" ,         
+                "state" : "alive",
+            },
+        },
+        
+
+        "current_operation" : []
+    }
+} 
 
 app.use(cors(config.corsOptions));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
-app.use(room)
+app.use(room);
+app.use(game);
 app.use(express.static('view'))
 
 
