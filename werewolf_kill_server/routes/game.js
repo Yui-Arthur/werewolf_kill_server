@@ -46,10 +46,7 @@ router.route('/api/game/:room_name/information/:user_name')
         try{     
             result =  await game.get_information(req.params.room_name, req.params.user_name , req.header('Authorization'))
             if(result.status)
-                res.status(200).json({
-                    information : result.information,
-                    player_position : result.player_position
-                })
+                res.status(200).json(result.player_info)
             else
                 res.status(500).json({
                     Error : result.log
@@ -66,13 +63,15 @@ router.route('/api/game/:room_name/operation/:user_name')
     .post(async function (req , res){
 
         try{     
-            result =  await game.send_player_operation(req.params.room_name, req.params.user_name , req.header('Authorization') , req.body)
-            if(result.status)
-                res.sendStatus(200)
-            else
-                res.status(500).json({
-                    Error : result.log
-                })
+            game.send_player_operation(req.params.room_name, req.params.user_name , req.header('Authorization') , req.body , function (result){
+
+                if(result.status)
+                    res.sendStatus(200)
+                else
+                    res.status(500).json({
+                        Error : result.log
+                    })
+            })
         } catch(e){
             console.log(e);
             res.sendStatus(500)

@@ -11,7 +11,7 @@ global.room_list = {
         "room_name": "TESTROOM",
         "room_leader": "yui",
         "room_user": [
-            "yui" , "pinyu" , "yeecheen" , "sunny" , "a" , "b" ,"c"
+            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" ,"c"
         ],
         "room_state" : "ready",
         "game_setting": config.default_setting[7],

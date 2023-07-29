@@ -41,13 +41,14 @@ router.route('/api/room/:room_name')
      * */ 
     .post(async function(req, res) {
         try{
-            result = await room.game_setting(req.header('Authorization') , req.params.room_name , req.body)
-            if(result.status)
-                res.sendStatus(200)
-            else
-                res.status(500).json({
-                    "Error" : result.log
-                })
+            room.game_setting(req.header('Authorization') , req.params.room_name , req.body , function(result){
+                if(result.status)
+                    res.sendStatus(200)
+                else
+                    res.status(500).json({
+                        "Error" : result.log
+                    })
+            })
             
         } catch(e){
             console.log(e);
@@ -157,13 +158,15 @@ router.route('/api/start_game/:room_name')
     .get(async function(req,res){
         try{
             
-            result = await  room.start_game(req.params.room_name , req.header('Authorization'))
-            if(result.status)
-                res.sendStatus(200)
-            else
-                res.status(500).json({
-                    "Error" : result.log
-                })
+            room.start_game(req.params.room_name , req.header('Authorization') , function(result){
+                if(result.status)
+                    res.sendStatus(200)
+                else
+                    res.status(500).json({
+                        "Error" : result.log
+                    })
+            })
+            
 
         } catch(e){
             console.log(e);
