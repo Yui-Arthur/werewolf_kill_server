@@ -194,9 +194,11 @@ module.exports = {
                 return route_back({status: false , log: "grpc error"})
             
             global.game_list[room_name] = {
-                'stage' : "Day 0",
+                'stage' : "",
+                'stage_description' : "遊戲開始，請查看身分",
                 'announcement' : [],
                 'information' : [],
+                'timer' : config.announcementWaitTime,
                 'vote_info' : {},
                 'player_num' : global.room_list[room_name]['game_setting']['player_num'],
                 'operation_time' : global.room_list[room_name]['game_setting']['operation_time'],
@@ -204,8 +206,8 @@ module.exports = {
                 'player' : {},
             }
 
-            setTimeout(game.next_stage , 1 , room_name , game.next_stage , game.get_vote_info , game.game_over)
-            // setTimeout(game.next_stage , global.room_list[room_name]['game_setting']['operation_time'] * 1000 , room_name)
+            // setTimeout(game.next_stage , 1 , room_name , game.next_stage , game.get_vote_info , game.game_over)
+            setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over)
             console.log(response)
             for( const [idx, user_name] of global.room_list[room_name]['room_user'].entries()){
                 global.game_list[room_name]['player'][idx] = {

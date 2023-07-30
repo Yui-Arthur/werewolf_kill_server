@@ -57,13 +57,15 @@ module.exports = {
 
             // set game stage
             global.game_list[room_name]['stage'] = result['stage_name']
-            
+            global.game_list[room_name]['stage_description']  = config.stageToDescription[result['stage_name'].split('-')[2]]
 
-            var timer = 5000
+
+            var timer = 5
+            var wait_time = 0
             // stage proccess
             for(var [index , user_stage] of result['stage'].entries()){
                 // died & chat & role_info => announcement
-                if(Array('died' , 'chat' , 'role_info').includes(user_stage["operation"])){
+                if(Array('died' , 'chat' , 'role_info' , 'other').includes(user_stage["operation"])){
 
                     // seer role_info description
                     if(user_stage["operation"] == 'role_info'){
@@ -74,7 +76,7 @@ module.exports = {
                     global.game_list[room_name]['announcement'].push({
                         'user' : user_stage["operation"] == 'role_info' ? user_stage['target'] : user_stage["user"],
                         'operation' : user_stage["operation"],
-                        'description' : user_stage["description"],
+                        'description' : user_stage["operation"] != "died" ? user_stage["description"] : global.room_list[room_name]["room_user"][user_stage["user"][0]] + user_stage["description"],
                         'allow' : user_stage["operation"] == 'role_info' ? user_stage["user"] : -1
                     })
                     // if someone died => user_state = died
@@ -83,6 +85,8 @@ module.exports = {
                             global.game_list[room_name]['player'][user]['user_state'] = "died"
                         }
                     }
+
+                    wait_time = config.announcementWaitTime
                 }
                 // vote & dialogue
                 else if(Array('vote' , 'vote_or_not' , 'dialogue' , 'role_info').includes(user_stage["operation"])){
@@ -92,6 +96,8 @@ module.exports = {
     
                     if(user_stage["operation"] == "vote")
                         setTimeout(vote_func , 1000 , room_name , global.game_list[room_name]['stage'] , vote_func)
+                    else if(user_stage["operation"] == "dialogue" && result['stage_name'].split('-')[2] == 'dialogue')
+                        global.game_list[room_name]['stage_description'] = global.room_list[room_name]["room_user"][user_stage["user"][0]] + global.game_list[room_name]['stage_description']
                 }
                 else{
                     // console.log(user_stage)
@@ -106,16 +112,22 @@ module.exports = {
                     break
                 }
             }
-            console.log(result)
-            // console.log(global.game_list[room_name]['information'])
-            // console.log(global.game_list[room_name]['announcement'])
+            // console.log(result)
+            console.log(global.game_list[room_name]['information'])
+            console.log(global.game_list[room_name]['announcement'])
+
             
 
-            if(timer != -1)
+            if(timer != -1){
+                timer = timer + wait_time
                 setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func) 
+                global.game_list[room_name]['timer'] = timer 
+            }
                 // setTimeout(stage_func , timer * 500, room_name , stage_func , vote_func , game_over_func) 
-            else
+            else{
                 setTimeout(game_over_func , 60 * 1000 , room_name) 
+                global.game_list[room_name]['timer'] = 60
+            }
 
         });
 
@@ -186,8 +198,10 @@ module.exports = {
 
         var info = {
             stage : global.game_list[room_name]['stage'],
+            stage_description : global.game_list[room_name]['stage_description'],
             announcement : announcement,
             information : information,
+            timer : global.game_list[room_name]['timer'],
             vote_info : vote_info,
             player_position : await this.get_player_position(room_name),
         }

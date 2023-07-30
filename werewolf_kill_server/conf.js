@@ -22,8 +22,8 @@ module.exports = {
         },
         7 : {
             "player_num": 7,
-            "operation_time" : 30,
-            "dialogue_time" : 60,
+            "operation_time" : 5,
+            "dialogue_time" : 10,
             "seer" : 1,
             "witch" : 1,
             "village" : 2,
@@ -64,5 +64,19 @@ module.exports = {
         2 : "village",
         3 : "werewolf",
         4 : "hunter"
-    }
+    },
+    stageToDescription : {
+        "werewolf" : "天黑請閉眼，狼人請睜眼，請殺人",
+        "seer" : "預言家請睜眼，確認查驗身份",
+        "witch" : "女巫請睜眼，請問要使用解藥，還是毒藥",
+        "check_end1" : "天亮請睜眼",
+        "check_end2" : "天亮請睜眼，獵人昨晚死了，啟動身份",
+        "dialogue" : "玩家進行討論",
+        "vote1" : "玩家進行投票",
+        "vote2" : "上局平票，玩家進行第二輪投票",
+        "hunter2" : "獵人被票出，啟動身份",
+        "check_end3" : "投票結果",
+
+    },
+    announcementWaitTime : 5
 }
