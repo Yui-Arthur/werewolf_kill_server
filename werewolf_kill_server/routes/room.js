@@ -23,7 +23,7 @@ router.route('/api/room/:room_name')
      * */ 
     .get(async function(req, res) {
         try{
-            if(await room.check_room(req.params.room_name))
+            if(global.room_list.hasOwnProperty(req.params.room_name))
                 res.status(200).json(global.room_list[req.params.room_name])
             else
                 res.status(404).json({
