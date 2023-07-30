@@ -13,6 +13,9 @@ global.room_list = {
         "room_user": [
             "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" ,"c"
         ],
+        "user_color" : [
+            "#111111" , "#222222" , "#333333" , "#444444" , "#555555" , "#666666" , "#777777"
+        ],
         "room_state" : "ready",
         "game_setting": config.default_setting[7],
     }

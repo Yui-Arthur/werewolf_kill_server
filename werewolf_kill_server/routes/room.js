@@ -74,7 +74,7 @@ router.route('/api/room/:room_name/:player_number')
         
     })
 
-router.route('/api/create_room/:user_name')
+router.route('/api/create_room/:user_name/:user_color')
     /**
      *  create new room
      *  rerturn random room number & leader user_token
@@ -82,7 +82,7 @@ router.route('/api/create_room/:user_name')
     .get(async function(req, res) {
         try{
             
-            ret = await room.create_room(req.params.user_name)
+            ret = await room.create_room(req.params.user_name , req.params.user_color)
             room_name = ret[0]
             user_token =  ret[1]
     
@@ -100,7 +100,7 @@ router.route('/api/create_room/:user_name')
         
     })
 
-router.route('/api/join_room/:room_name/:user_name')
+router.route('/api/join_room/:room_name/:user_name/:user_color')
     /**
      *  join room 
      *  rerturn user_token
@@ -109,7 +109,7 @@ router.route('/api/join_room/:room_name/:user_name')
         try{
             
             
-            result = await room.join_room(req.params.user_name , req.params.room_name)
+            result = await room.join_room(req.params.user_name , req.params.room_name , req.params.user_color)
             
             if(result.status)
                 res.status(200).json({

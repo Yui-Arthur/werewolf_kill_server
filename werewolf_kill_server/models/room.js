@@ -12,7 +12,7 @@ module.exports = {
      * @param {string} user_name 
      * @returns {string , string} 
      */
-    create_room : async function(user_name){
+    create_room : async function(user_name , user_color){
         var room_name = randomstring.generate({
             length: 8,
             capitalization : 'uppercase'
@@ -23,6 +23,7 @@ module.exports = {
             "room_name" : room_name,
             "room_leader" : user_name,
             "room_user" : [user_name],
+            "user_color" : [`#${user_color}`],
             "room_state" : "ready",
             "game_setting" : config.default_setting[7]
         };
@@ -43,7 +44,7 @@ module.exports = {
      * @param {string} room_name 
      * @returns 
      */
-    join_room : async function(user_name , room_name){
+    join_room : async function(user_name , room_name , user_color){
         if(!await this.check_room(room_name))
             return{status: false,  log:"room not found" , token : ""}    
         if(await this.is_full(room_name))
@@ -51,6 +52,7 @@ module.exports = {
 
         var user_token = await jwt_op.create_room_jwt(user_name , room_name , false)
         global.room_list[room_name]['room_user'].push(user_name)
+        global.room_list[room_name]['user_color'].push(`#${user_color}`)
     
         return{status: true,  log:"ok" , token : user_token}
     },
@@ -70,6 +72,7 @@ module.exports = {
             var index = global.room_list[room_name]['room_user'].indexOf(user_name);
             if(index > -1){
                 global.room_list[room_name]['room_user'].splice(index, 1)
+                global.room_list[room_name]['user_color'].splice(index, 1)
                 return {status: true,  log:"ok"}
             }
             else
@@ -81,6 +84,7 @@ module.exports = {
             var index = global.room_list[room_name]['room_user'].indexOf(user_name);
             if(index > -1){
                 global.room_list[room_name]['room_user'].splice(index, 1)
+                global.room_list[room_name]['user_color'].splice(index, 1)
                 return {status: true,  log:"ok"}
             }
             else
