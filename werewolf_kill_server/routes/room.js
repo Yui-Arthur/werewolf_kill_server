@@ -57,6 +57,10 @@ router.route('/api/room/:room_name')
     })
 
 router.route('/api/room/:room_name/:player_number')
+    /**
+     *  setting specific room with player number
+     *  rerturn OK or Error
+     * */ 
     .get(async function(req, res) {
             try{
                 result = await room.change_player_number(req.header('Authorization') , req.params.room_name , req.params.player_number)
@@ -155,6 +159,10 @@ router.route('/api/quit_room/:room_name/:user_name')
     })
 
 router.route('/api/start_game/:room_name')
+    /**
+     *  start the specific room 
+     *  rerturn OK or Error
+     * */ 
     .get(async function(req,res){
         try{
             

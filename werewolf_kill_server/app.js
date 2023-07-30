@@ -21,26 +21,7 @@ global.room_list = {
     }
 };
 
-global.game_list = {
-    "TESTROOM" : {
-        "player" :{
-            0 : {
-                "user_name" : "yui",
-                "user_role" : "seer" ,
-                "state" : "alive"      
-            },
-    
-            1 : {
-                "user_name" : "pinyu",
-                "user_role" : "village" ,         
-                "state" : "alive",
-            },
-        },
-        
-
-        "current_operation" : []
-    }
-} 
+global.game_list = {} 
 
 app.use(cors(config.corsOptions));
 app.use(bodyparser.json());

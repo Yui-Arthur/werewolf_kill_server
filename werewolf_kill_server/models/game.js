@@ -13,6 +13,10 @@ module.exports = {
 
     get_vote_info: async function(room_name , current_stage , vote_func){
         // grpc vote_info func
+
+        if(current_stage !=  global.game_list[room_name]['stage'])
+            return
+
         const client = new werewolf_kill('localhost:50051', grpc.credentials.createInsecure());
         client.voteInfo({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result){
             if(err){
@@ -55,7 +59,7 @@ module.exports = {
             global.game_list[room_name]['stage'] = result['stage_name']
             
 
-            var timer = 0
+            var timer = 5000
             // stage proccess
             for(var [index , user_stage] of result['stage'].entries()){
                 // died & chat & role_info => announcement
@@ -97,7 +101,9 @@ module.exports = {
                         'operation' : "game_over",
                         'description' : user_stage["description"],
                         'allow' : -1
-                    })        
+                    })
+                    global.game_list[room_name]['information'].length = 0    
+                    break
                 }
             }
             console.log(result)
