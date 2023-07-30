@@ -157,8 +157,9 @@ module.exports = {
 
         var information = []
         var vote_info = {}
+        console.log(user_id)
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
-            if(user_stage['user'].includes(user_id) || global.game_info['player'][user_id]['user_state'] == "died"){
+            if(user_stage['user'].includes(user_id) || global.game_list[room_name]['player'][user_id]['user_state'] == "died"){
                 information.push(user_stage)
 
                 if(user_stage['operation'] == "vote")
@@ -168,7 +169,7 @@ module.exports = {
 
         var announcement = []
         for( const [index , user_stage] of global.game_list[room_name]["announcement"].entries()){
-            if(user_stage['allow'] == user_id || user_stage['allow'] == -1 || global.game_info['player'][user_id]['user_state'] == "died")
+            if(user_stage['allow'] == user_id || user_stage['allow'] == -1 || global.game_list[room_name]['player'][user_id]['user_state'] == "died")
                 announcement.push({
                     'user' : user_stage["user"],
                     'operation' : user_stage["operation"],
