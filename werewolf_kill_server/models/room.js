@@ -4,6 +4,28 @@ var game = require('./game')
 var grpc = require('@grpc/grpc-js');
 var werewolf_kill = require('./proto')
 var randomstring = require("randomstring");
+var fs = require('fs');
+
+function padTo2Digits(num) {
+    return num.toString().padStart(2, '0');
+}
+
+function formatDate(date) {
+    console.log(date);
+    return (
+        [
+        date.getFullYear(),
+        padTo2Digits(date.getMonth() + 1),
+        padTo2Digits(date.getDate()),
+        ].join('-') +
+        '_' +
+        [
+        padTo2Digits(date.getHours()),
+        padTo2Digits(date.getMinutes()),
+        padTo2Digits(date.getSeconds()),
+        ].join('_')
+    );
+}
 
 module.exports = {
 
@@ -203,12 +225,16 @@ module.exports = {
                 'player_num' : global.room_list[room_name]['game_setting']['player_num'],
                 'operation_time' : global.room_list[room_name]['game_setting']['operation_time'],
                 'dialogue_time' : global.room_list[room_name]['game_setting']['dialogue_time'],
+                'start_time' : Date.now(),
+                'log_file' :  "",
                 'player' : {},
             }
 
-            // setTimeout(game.next_stage , 1 , room_name , game.next_stage , game.get_vote_info , game.game_over)
             setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over)
-            console.log(response)
+            // console.log(formatDate())
+            global.game_list[room_name]['log_file'] = `./game_logs/${room_name}_${formatDate(new Date(global.game_list[room_name]['start_time']))}.log`
+            fs.writeFileSync(global.game_list[room_name]["log_file"] , "")
+            
             for( const [idx, user_name] of global.room_list[room_name]['room_user'].entries()){
                 global.game_list[room_name]['player'][idx] = {
                     "user_name" : user_name,
@@ -218,11 +244,13 @@ module.exports = {
                 }
             }
 
+            
+
             return route_back({status: true,  log:"ok"})
         })
 
-    }
-    
+    },
+   
 
 }
 

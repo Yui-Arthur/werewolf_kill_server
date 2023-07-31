@@ -3,7 +3,7 @@ var jwt_op = require('./jwt')
 var room = require('./room')
 var grpc = require('@grpc/grpc-js');
 var werewolf_kill = require('./proto')
-
+var fs = require('fs');
 
 module.exports = {
 
@@ -62,9 +62,10 @@ module.exports = {
 
             var timer = 5
             var wait_time = 0
-            // console.log("ori \n" , result['stage'])
+            
+            // suffle stage
             result['stage'].sort((a,b) => 0.5 - Math.random());
-            // console.log("res \n" , result['stage'])
+            
             // stage proccess
             for(var [index , user_stage] of result['stage'].entries()){
                 // died & chat & role_info => announcement
@@ -118,6 +119,14 @@ module.exports = {
             // console.log(result)
             console.log(global.game_list[room_name]['information'])
             console.log(global.game_list[room_name]['announcement'])
+            
+            // save log
+            var data = JSON.stringify({
+                "timestamp" : Date.now() - global.game_list[room_name]['start_time'] ,
+                ...global.game_list[room_name]
+            });
+
+            fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
 
             
 
@@ -269,8 +278,14 @@ module.exports = {
             client.sendUserOperation(user_operation , function(err , response){
                 if(err)
                     return route_back({status: false,  log:"grpc error"})
-                else if(response.result)
+                else if(response.result){
+                    var data = JSON.stringify({
+                        "timestamp" : Date.now() - global.game_list[room_name]['start_time'] ,
+                        ...user_operation
+                    });
+                    fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
                     return route_back({status: true,  log:"ok"})
+                }
                 else
                     return route_back({status: false,  log:"grpc operation false"})
             })
