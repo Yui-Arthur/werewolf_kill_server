@@ -218,6 +218,8 @@ module.exports = {
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
             if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && user_stage['target'].includes(target))
                 return true
+            else if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && user_stage['operation'] == "dialogue")
+                return true
                 
         }
 
