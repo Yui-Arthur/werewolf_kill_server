@@ -14,7 +14,7 @@ global.room_list = {
             "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" ,"c"
         ],
         "user_color" : [
-            "#111111" , "#222222" , "#333333" , "#444444" , "#555555" , "#666666" , "#777777"
+            "#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" , "#d5e7e7"
         ],
         "room_state" : "ready",
         "game_setting": config.default_setting[7],

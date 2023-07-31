@@ -62,6 +62,9 @@ module.exports = {
 
             var timer = 5
             var wait_time = 0
+            // console.log("ori \n" , result['stage'])
+            result['stage'].sort((a,b) => 0.5 - Math.random());
+            // console.log("res \n" , result['stage'])
             // stage proccess
             for(var [index , user_stage] of result['stage'].entries()){
                 // died & chat & role_info => announcement
