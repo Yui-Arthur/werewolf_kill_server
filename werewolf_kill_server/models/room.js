@@ -227,6 +227,7 @@ module.exports = {
                 'dialogue_time' : global.room_list[room_name]['game_setting']['dialogue_time'],
                 'start_time' : Date.now(),
                 'log_file' :  "",
+                'empty' : 1,
                 'player' : {},
             }
 

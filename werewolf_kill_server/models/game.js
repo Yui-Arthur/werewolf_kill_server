@@ -21,18 +21,17 @@ module.exports = {
         client.voteInfo({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result){
             if(err){
                 console.log(err)
-                setTimeout(vote_func , 1000 , room_name , current_stage , vote_func)
+                // setTimeout(vote_func , 1000 , room_name , current_stage , vote_func)
             }
 
-            // console.log(result)
             for(const [idx , user_state] of result.state.entries()){
                 if(user_state !=-1)
                     global.game_list[room_name]['vote_info'][idx] = user_state
             }
+
             if(current_stage ==  global.game_list[room_name]['stage'])
                 setTimeout(vote_func, 1000 , room_name , current_stage , vote_func)
-            else
-                global.game_list[room_name]['vote_info'] = {}
+                
         })
         
     },
@@ -43,6 +42,15 @@ module.exports = {
     },
 
     next_stage : async function(room_name , stage_func , vote_func , game_over_func){
+        // vote result stage
+        if(Array('vote1' , 'vote2').includes(global.game_list[room_name]['stage'].split('-')[2])){
+            global.game_list[room_name]['empty'] = 2
+            global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
+        }
+        else
+            global.game_list[room_name]['empty'] = 0
+
+        global.game_list[room_name]['vote_info'] = {}
         // grpc next_stage func
         const client = new werewolf_kill('localhost:50051', grpc.credentials.createInsecure());
         client.nextStage({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result) {
@@ -59,12 +67,9 @@ module.exports = {
             global.game_list[room_name]['stage'] = result['stage_name']
             global.game_list[room_name]['stage_description']  = config.stageToDescription[result['stage_name'].split('-')[2]]
 
-
             var timer = 5
             var wait_time = 0
             
-            // suffle stage
-            result['stage'].sort((a,b) => 0.5 - Math.random());
             
             // stage proccess
             for(var [index , user_stage] of result['stage'].entries()){
@@ -97,9 +102,14 @@ module.exports = {
                     global.game_list[room_name]['information'].push(user_stage)
                     
                     timer = user_stage["operation"] == "dialogue" ? global.game_list[room_name]['dialogue_time'] : global.game_list[room_name]['operation_time']
-    
-                    if(user_stage["operation"] == "vote")
+                    
+                    // update vote info
+                    if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2])){
                         setTimeout(vote_func , 1000 , room_name , global.game_list[room_name]['stage'] , vote_func)
+
+                        if(result['stage_name'].split('-')[2] == "werewolf")
+                            global.game_list[room_name]['empty'] = 1
+                    }
                     else if(user_stage["operation"] == "dialogue" && result['stage_name'].split('-')[2] == 'dialogue')
                         global.game_list[room_name]['stage_description'] = global.room_list[room_name]["room_user"][user_stage["user"][0]] + global.game_list[room_name]['stage_description']
                 }
@@ -116,7 +126,10 @@ module.exports = {
                     break
                 }
             }
-            // console.log(result)
+            
+            // suffle announcement
+            global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
+
             console.log(global.game_list[room_name]['information'])
             console.log(global.game_list[room_name]['announcement'])
             
@@ -187,13 +200,16 @@ module.exports = {
 
         var information = []
         var vote_info = {}
+        var empty = 0
         console.log(user_id)
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
             if(user_stage['user'].includes(user_id) || global.game_list[room_name]['player'][user_id]['user_state'] == "died"){
                 information.push(user_stage)
 
-                if(user_stage['operation'] == "vote")
+                if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf"){
                     vote_info = global.game_list[room_name]['vote_info']
+                    empty = 1
+                }
             }
         }
 
@@ -208,13 +224,15 @@ module.exports = {
             
         }
 
+
         var info = {
             stage : global.game_list[room_name]['stage'],
             stage_description : global.game_list[room_name]['stage_description'],
             announcement : announcement,
             information : information,
             timer : global.game_list[room_name]['timer'],
-            vote_info : vote_info,
+            vote_info : global.game_list[room_name]['empty'] == 2 ? global.game_list[room_name]['prev_vote'] : vote_info,
+            empty : global.game_list[room_name]['empty'] == 2 ? global.game_list[room_name]['empty'] : empty,
             player_position : await this.get_player_position(room_name),
         }
         
