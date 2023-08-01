@@ -1,0 +1,6 @@
+FROM node
+WORKDIR /usr/src/app
+COPY ./werewolf_kill_server/package*.json ./
+RUN npm install 
+COPY ["./*" , "./"]
+CMD ["node" , "app.js" ]

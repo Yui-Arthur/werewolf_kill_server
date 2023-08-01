@@ -78,5 +78,6 @@ module.exports = {
         "check_end3" : "投票結果",
 
     },
-    announcementWaitTime : 5
+    announcementWaitTime : 5,
+    grpc_server_ip : "localhost:50051",
 }

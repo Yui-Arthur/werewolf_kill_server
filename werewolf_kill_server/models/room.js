@@ -163,7 +163,7 @@ module.exports = {
         if(sum != game_setting['player_num'])
             return route_back({status: false , log: "player num and role num not equal"})
 
-        const client = new werewolf_kill('localhost:50051', grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.checkRoleList({role : role_list, room_name : room_name}, function (err, response) {
             console.log(response)
             if(err){
@@ -209,7 +209,7 @@ module.exports = {
                 role_list[config.roleToIndex[key]] = value
         }
         
-        const client = new werewolf_kill('localhost:50051', grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.startGame({role : role_list, room_name : room_name}, function (err, response){
 
             if(err)

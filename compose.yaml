@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+    api_server:
+      image: api_server
+      container_name: api_server
+      ports:
+        - "80:8001"
+      build:
+        context: ./werewolf_kill_server
+        dockerfile: dockerfile

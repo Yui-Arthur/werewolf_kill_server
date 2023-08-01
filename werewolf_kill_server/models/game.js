@@ -17,7 +17,7 @@ module.exports = {
         if(current_stage !=  global.game_list[room_name]['stage'])
             return
 
-        const client = new werewolf_kill('localhost:50051', grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.voteInfo({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result){
             if(err){
                 console.log(err)
@@ -52,7 +52,7 @@ module.exports = {
 
         global.game_list[room_name]['vote_info'] = {}
         // grpc next_stage func
-        const client = new werewolf_kill('localhost:50051', grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.nextStage({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result) {
             
             if(err){
@@ -246,10 +246,17 @@ module.exports = {
 
 
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
+            var target_list = user_stage['target']
+            // vote_or_not can vote -1
+            if(user_stage['operation'] == "vote_or_not")
+                target_list.push(-1)
+
             if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && user_stage['target'].includes(target))
                 return true
+            //  dialogue not check target
             else if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && user_stage['operation'] == "dialogue")
                 return true
+            
                 
         }
 
@@ -277,7 +284,7 @@ module.exports = {
             if(! await this.check_operation(room_name , user_id , operation['target'] ,operation['operation'] , operation['stage_name']))
             return  route_back({status : false , log : "operation error"})
             
-            const client = new werewolf_kill('localhost:50051', grpc.credentials.createInsecure());
+            const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
             user_operation = {
                 user : user_id,
                 operation : operation['operation'],
