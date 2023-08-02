@@ -34,4 +34,6 @@ app.use(express.static('view'))
 
 app.listen(8001 , function(req , res ){
     console.log('node server is running...'); 
+    console.log(process.env)
+    console.log(`grpc api server ${config.grpc_server_ip}`)
 })

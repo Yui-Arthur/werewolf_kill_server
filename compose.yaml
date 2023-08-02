@@ -12,12 +12,12 @@ services:
         context: ./werewolf_kill_server
         dockerfile: dockerfile
       environment:
-        - grpc_server_ip="grpc_server:50051"
+        grpc_server_ip : "grpc_server:50051"
     grpc_server:
       image: grpc_server
       container_name: grpc_server
-        build:
-          context: ./werewolf_kill
+      build:
+        context: ./werewolf_kill
     #       dockerfile: Dockerfile
     # front:
     #   image: nginx
