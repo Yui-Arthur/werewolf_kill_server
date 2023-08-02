@@ -4,8 +4,8 @@ services:
     api_server:
       image: api_server
       container_name: api_server
-      ports:
-        - "80:8001"
+      # ports:
+      #   - "80:8001"
       volumes:
         - /home/a10955psys/werewolf_kill_server/logs:/usr/src/app/game_logs
       build:
@@ -18,10 +18,12 @@ services:
       container_name: grpc_server
       build:
         context: ./werewolf_kill
-    #       dockerfile: Dockerfile
-    # front:
-    #   image: nginx
-    #   container_name: werewolf_kill
-    #   volumes:
-    #     - /home/a10955psys/werewolf_kill_server/wolf/nginx.conf:/etc/nginx/conf.d/default.conf
-    #     - /home/a10955psys/werewolf_kill_server/wolf/:/usr/share/nginx/html
+        dockerfile: Dockerfile
+    front:
+      image: nginx
+      container_name: werewolf_kill
+      volumes:
+        - /home/a10955psys/werewolf_kill_server/wolf/nginx.conf:/etc/nginx/conf.d/default.conf
+        - /home/a10955psys/werewolf_kill_server/wolf/:/usr/share/nginx/html
+      ports:
+        - "80:80"
