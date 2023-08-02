@@ -265,7 +265,8 @@ module.exports = {
         var empty = 0
         console.log(user_id)
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
-            if(user_stage['user'].includes(user_id) || global.game_list[room_name]['player'][user_id]['user_state'] == "died"){
+            // if(user_stage['user'].includes(user_id) || global.game_list[room_name]['player'][user_id]['user_state'] == "died"){
+            if(user_stage['user'].includes(user_id)){
                 information.push(user_stage)
 
                 if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf"){
@@ -277,7 +278,8 @@ module.exports = {
 
         var announcement = []
         for( const [index , user_stage] of global.game_list[room_name]["announcement"].entries()){
-            if(user_stage['allow'] == user_id || user_stage['allow'] == -1 || global.game_list[room_name]['player'][user_id]['user_state'] == "died")
+            // if(user_stage['allow'] == user_id || user_stage['allow'] == -1 || global.game_list[room_name]['player'][user_id]['user_state'] == "died")
+            if(user_stage['allow'] == user_id || user_stage['allow'] == -1)
                 announcement.push({
                     'user' : user_stage["user"],
                     'operation' : user_stage["operation"],
