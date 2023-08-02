@@ -229,6 +229,7 @@ module.exports = {
                 'start_time' : Date.now(),
                 'log_file' :  "",
                 'player' : {},
+                'died' : [],
             }
 
             global.game_timer[room_name] = {

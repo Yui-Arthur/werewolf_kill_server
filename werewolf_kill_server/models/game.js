@@ -93,6 +93,11 @@ module.exports = {
         else
             global.game_list[room_name]['empty'] = 0
 
+        // set died state
+        for(const user of global.game_list[room_name]['died']){
+            global.game_list[room_name]['player'][user]['user_state'] = "died"
+        }
+        
         
         // grpc next_stage func
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
@@ -106,6 +111,7 @@ module.exports = {
             global.game_list[room_name]['information'].length = 0
             global.game_list[room_name]['announcement'].length = 0
             global.game_list[room_name]['vote_info'] = {}
+            global.game_list[room_name]['died'] = []
             for(var [user_id , value]  of Object.entries(global.game_list[room_name]["player"])){
                 value['operation'] = {}
             }
@@ -139,7 +145,7 @@ module.exports = {
                     // if someone died => user_state = died
                     if(user_stage["operation"] == "died"){
                         for(const [idx , user] of user_stage['user'].entries()){
-                            global.game_list[room_name]['player'][user]['user_state'] = "died"
+                            global.game_list[room_name]['died'].push(user)
                         }
                     }
 
@@ -153,7 +159,8 @@ module.exports = {
                         global.game_list[room_name]['player'][i]['operation'][user_stage["operation"]] = 0
                     }
 
-                    timer = user_stage["operation"] == "dialogue" ? global.game_list[room_name]['dialogue_time'] : global.game_list[room_name]['operation_time']
+                    var tmp_timer = user_stage["operation"] == "dialogue" ? global.game_list[room_name]['dialogue_time'] : global.game_list[room_name]['operation_time']
+                    timer = Math.max(tmp_timer , timer)
                     
                     // update vote info
                     if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2])){
