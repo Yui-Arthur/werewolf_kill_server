@@ -36,8 +36,51 @@ module.exports = {
         
     },
 
+    skip_stage : async function(room_name , stage_name , token){
+        token = token.replace('Bearer ', '')
+
+        if(!await this.check_game_room(room_name))
+            return{status: false,  log:"room not found or game is not started"}  
+
+            
+        if(!await jwt_op.verify_room_jwt(token , room_name , false))
+            return{status: false,  log:"jwt error"}
+
+        // if(global.game_list[room_name]["stage"] != stage_name)
+        //     return {status: false,  log:"stage error"}
+
+        // for(const [user_id , value] of Object.entries(global.game_list[room_name]['player'])){
+        //     for(const [user_operation, op_flag] of Object.entries(value['operation'])){
+        //         if(op_flag == 0)
+        //             return {status: false,  log:"not all users ready"}
+        //     }
+
+        // }
+
+        // if(global.game_list[room_name]["stage"] != stage_name)
+        //     return {status: false,  log:"stage error"}
+
+
+        if(global.game_timer[room_name]['end_time'] - Date.now() <= 5000)
+            return {status: false,  log:"timer less then 5 seconds , please wait"}
+
+        clearTimeout(global.game_timer[room_name]['timer'])
+        global.game_timer[room_name]['end_time'] = Date.now()
+        this.next_stage(room_name , this.next_stage , this.get_vote_info , this.game_over)
+
+
+        var data = JSON.stringify({
+            "timestamp" : (Date.now() - global.game_list[room_name]['start_time'])/1000 ,
+            "skip" : "skip"
+        });
+        fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
+
+        return{status: true,  log:"ok"}
+    },
+
     game_over : async function(room_name){
         delete global.game_list[room_name]
+        delete global.game_timer[room_name]
         global.room_list[room_name]['state'] = "ready"
     },
 
@@ -50,7 +93,7 @@ module.exports = {
         else
             global.game_list[room_name]['empty'] = 0
 
-        global.game_list[room_name]['vote_info'] = {}
+        
         // grpc next_stage func
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.nextStage({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result) {
@@ -62,6 +105,10 @@ module.exports = {
             // clear prev announcement & information
             global.game_list[room_name]['information'].length = 0
             global.game_list[room_name]['announcement'].length = 0
+            global.game_list[room_name]['vote_info'] = {}
+            for(var [user_id , value]  of Object.entries(global.game_list[room_name]["player"])){
+                value['operation'] = {}
+            }
 
             // set game stage
             global.game_list[room_name]['stage'] = result['stage_name']
@@ -78,7 +125,8 @@ module.exports = {
 
                     // seer role_info description
                     if(user_stage["operation"] == 'role_info'){
-                        user_stage["description"] = user_stage["description"] == "0" ? `${user_stage['target']}是壞人` : `${user_stage['target']}是好人`
+                        user_name = global.room_list[room_name]["room_user"][user_stage['target']]
+                        user_stage["description"] = user_stage["description"] == "0" ? `${user_name}是壞人` : `${user_name }是好人`
                     }
                     
 
@@ -98,9 +146,13 @@ module.exports = {
                     wait_time = config.announcementWaitTime
                 }
                 // vote & dialogue
-                else if(Array('vote' , 'vote_or_not' , 'dialogue' , 'role_info').includes(user_stage["operation"])){
+                else if(Array('vote' , 'vote_or_not' , 'dialogue').includes(user_stage["operation"])){
                     global.game_list[room_name]['information'].push(user_stage)
-                    
+
+                    for(var i of user_stage["user"]){
+                        global.game_list[room_name]['player'][i]['operation'][user_stage["operation"]] = 0
+                    }
+
                     timer = user_stage["operation"] == "dialogue" ? global.game_list[room_name]['dialogue_time'] : global.game_list[room_name]['operation_time']
                     
                     // update vote info
@@ -135,7 +187,7 @@ module.exports = {
             
             // save log
             var data = JSON.stringify({
-                "timestamp" : Date.now() - global.game_list[room_name]['start_time'] ,
+                "timestamp" : (Date.now() - global.game_list[room_name]['start_time'])/1000 ,
                 ...global.game_list[room_name]
             });
 
@@ -145,7 +197,10 @@ module.exports = {
 
             if(timer != -1){
                 timer = timer + wait_time
-                setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func) 
+                global.game_timer[room_name] = {
+                    timer : setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func) ,
+                    end_time : Date.now() + timer * 1000,
+                } 
                 global.game_list[room_name]['timer'] = timer 
             }
                 // setTimeout(stage_func , timer * 500, room_name , stage_func , vote_func , game_over_func) 
@@ -305,9 +360,10 @@ module.exports = {
                     return route_back({status: false,  log:"grpc error"})
                 else if(response.result){
                     var data = JSON.stringify({
-                        "timestamp" : Date.now() - global.game_list[room_name]['start_time'] ,
+                        "timestamp" : (Date.now() - global.game_list[room_name]['start_time'])/1000,
                         ...user_operation
                     });
+                    global.game_list[room_name]['player'][user_id]["operation"][operation['operation']] = 1
                     fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
                     return route_back({status: true,  log:"ok"})
                 }

@@ -22,6 +22,7 @@ global.room_list = {
 };
 
 global.game_list = {} 
+global.game_timer = {}
 
 app.use(cors(config.corsOptions));
 app.use(bodyparser.json());

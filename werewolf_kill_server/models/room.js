@@ -216,22 +216,25 @@ module.exports = {
                 return route_back({status: false , log: "grpc error"})
             
             global.game_list[room_name] = {
-                'stage' : "",
+                'stage' : "check_role",
                 'stage_description' : "遊戲開始，請查看身分",
                 'announcement' : [],
                 'information' : [],
                 'timer' : config.announcementWaitTime,
                 'vote_info' : {},
+                'empty' : 0,
                 'player_num' : global.room_list[room_name]['game_setting']['player_num'],
                 'operation_time' : global.room_list[room_name]['game_setting']['operation_time'],
                 'dialogue_time' : global.room_list[room_name]['game_setting']['dialogue_time'],
                 'start_time' : Date.now(),
                 'log_file' :  "",
-                'empty' : 1,
                 'player' : {},
             }
 
-            setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over)
+            global.game_timer[room_name] = {
+                timer : setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over),
+                end_time : Date.now() + config.announcementWaitTime  * 1000
+            }
             // console.log(formatDate())
             global.game_list[room_name]['log_file'] = `./game_logs/${room_name}_${formatDate(new Date(global.game_list[room_name]['start_time']))}.log`
             fs.writeFileSync(global.game_list[room_name]["log_file"] , "")
@@ -241,7 +244,8 @@ module.exports = {
                     "user_name" : user_name,
                     "user_role" : config.indexToRole[response['role'][idx]],
                     "user_state" : "alive", 
-                    "user_position" : [0,0]
+                    "user_position" : [0,0],
+                    "operation" : {},
                 }
             }
 

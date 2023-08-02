@@ -79,6 +79,25 @@ router.route('/api/game/:room_name/operation/:user_name')
 
     })
 
+router.route('/api/game/:room_name/skip/:stage')
+    .get(async function (req , res){
+
+        try{     
+            result = await game.skip_stage(req.params.room_name, req.params.stage  , req.header('Authorization'))
+
+            if(result.status)
+                res.sendStatus(200)
+            else
+                res.status(500).json({
+                    Error : result.log
+                })
+            
+        } catch(e){
+            console.log(e);
+            res.sendStatus(500)
+        }
+
+    })
 
 
 
