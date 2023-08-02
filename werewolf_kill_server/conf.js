@@ -79,5 +79,5 @@ module.exports = {
 
     },
     announcementWaitTime : 5,
-    grpc_server_ip : "localhost:50051" || process.env.grpc_server_ip,
+    grpc_server_ip : process.env.grpc_server_ip || "localhost:50051" ,
 }
