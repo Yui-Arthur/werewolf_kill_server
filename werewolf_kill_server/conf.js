@@ -22,8 +22,8 @@ module.exports = {
         },
         7 : {
             "player_num": 7,
-            "operation_time" : 5,
-            "dialogue_time" : 10,
+            "operation_time" : 100,
+            "dialogue_time" : 100,
             "seer" : 1,
             "witch" : 1,
             "village" : 2,
@@ -79,5 +79,5 @@ module.exports = {
 
     },
     announcementWaitTime : 5,
-    grpc_server_ip : "localhost:50051",
+    grpc_server_ip : "localhost:50051" || process.env.grpc_server_ip,
 }
