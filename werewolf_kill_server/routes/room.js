@@ -190,7 +190,7 @@ router.route('/api/reset/')
      * */ 
     .get(async function(req,res){
         try{
-            var color = ["#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" , "#d5e7e7"]
+            var color = ["#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" , "#93c5fd"]
             for(var i = 0; i <5; i++){
                 for(var j = 5; j <= 6 ; j++)
                     global.room_list[`TESTROOM_${i}_${j}`] = {
