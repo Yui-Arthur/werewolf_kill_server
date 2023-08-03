@@ -8,7 +8,7 @@ var fs = require('fs');
 module.exports = {
 
     check_game_room : async function(room_name){
-        return global.room_list.hasOwnProperty(room_name) && global.room_list[room_name]['room_state'] == "started"
+        return global.game_list.hasOwnProperty(room_name) && global.room_list[room_name]['room_state'] == "started"
     },
 
     get_vote_info: async function(room_name , current_stage , vote_func){
@@ -104,7 +104,8 @@ module.exports = {
             console.log(e)
         }
         
-        
+        if(!global.game_list.hasOwnProperty(room_name))
+            return
         // grpc next_stage func
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.nextStage({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result) {
@@ -275,7 +276,7 @@ module.exports = {
         var information = []
         var vote_info = {}
         var empty = 0
-        console.log(user_id)
+        
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
             // if(user_stage['user'].includes(user_id) || global.game_list[room_name]['player'][user_id]['user_state'] == "died"){
             if(user_stage['user'].includes(user_id)){
