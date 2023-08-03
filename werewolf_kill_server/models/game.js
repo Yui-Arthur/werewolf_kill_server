@@ -85,17 +85,23 @@ module.exports = {
     },
 
     next_stage : async function(room_name , stage_func , vote_func , game_over_func){
-        // vote result stage
-        if(Array('vote1' , 'vote2').includes(global.game_list[room_name]['stage'].split('-')[2])){
-            global.game_list[room_name]['empty'] = 2
-            global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
+        try{
+            // vote result stage
+            if(Array('vote1' , 'vote2').includes(global.game_list[room_name]['stage'].split('-')[2])){
+                global.game_list[room_name]['empty'] = 2
+                global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
+            }
+            else
+                global.game_list[room_name]['empty'] = 0
+    
+            // set died state
+            for(const user of global.game_list[room_name]['died']){
+                global.game_list[room_name]['player'][user]['user_state'] = "died"
+            }
+            
         }
-        else
-            global.game_list[room_name]['empty'] = 0
-
-        // set died state
-        for(const user of global.game_list[room_name]['died']){
-            global.game_list[room_name]['player'][user]['user_state'] = "died"
+        catch(e){
+            console.log(e)
         }
         
         
@@ -108,113 +114,119 @@ module.exports = {
                 return 
             }
             // clear prev announcement & information
-            global.game_list[room_name]['information'].length = 0
-            global.game_list[room_name]['announcement'].length = 0
-            global.game_list[room_name]['vote_info'] = {}
-            global.game_list[room_name]['died'] = []
-            for(var [user_id , value]  of Object.entries(global.game_list[room_name]["player"])){
-                value['operation'] = {}
-            }
+            try {
+                global.game_list[room_name]['information'].length = 0
+                global.game_list[room_name]['announcement'].length = 0
+                global.game_list[room_name]['vote_info'] = {}
+                global.game_list[room_name]['died'] = []
+                for(var [user_id , value]  of Object.entries(global.game_list[room_name]["player"])){
+                    value['operation'] = {}
+                }
 
-            // set game stage
-            global.game_list[room_name]['stage'] = result['stage_name']
-            global.game_list[room_name]['stage_description']  = config.stageToDescription[result['stage_name'].split('-')[2]]
+                // set game stage
+                global.game_list[room_name]['stage'] = result['stage_name']
+                global.game_list[room_name]['stage_description']  = config.stageToDescription[result['stage_name'].split('-')[2]]
 
-            var timer = 5
-            var wait_time = 0
-            
-            
-            // stage proccess
-            for(var [index , user_stage] of result['stage'].entries()){
-                // died & chat & role_info => announcement
-                if(Array('died' , 'chat' , 'role_info' , 'other').includes(user_stage["operation"])){
+                var timer = 5
+                var wait_time = 0
+                
+                
+                // stage proccess
+                for(var [index , user_stage] of result['stage'].entries()){
+                    // died & chat & role_info => announcement
+                    if(Array('died' , 'chat' , 'role_info' , 'other').includes(user_stage["operation"])){
 
-                    // seer role_info description
-                    if(user_stage["operation"] == 'role_info'){
-                        user_name = global.room_list[room_name]["room_user"][user_stage['target']]
-                        user_stage["description"] = user_stage["description"] == "0" ? `${user_name}是壞人` : `${user_name }是好人`
-                    }
-                    
-
-                    global.game_list[room_name]['announcement'].push({
-                        'user' : user_stage["operation"] == 'role_info' ? user_stage['target'] : user_stage["user"],
-                        'operation' : user_stage["operation"],
-                        'description' : user_stage["operation"] != "died" ? user_stage["description"] : global.room_list[room_name]["room_user"][user_stage["user"][0]] + user_stage["description"],
-                        'allow' : user_stage["operation"] == 'role_info' ? user_stage["user"] : -1
-                    })
-                    // if someone died => user_state = died
-                    if(user_stage["operation"] == "died"){
-                        for(const [idx , user] of user_stage['user'].entries()){
-                            global.game_list[room_name]['died'].push(user)
+                        // seer role_info description
+                        if(user_stage["operation"] == 'role_info'){
+                            user_name = global.room_list[room_name]["room_user"][user_stage['target']]
+                            user_stage["description"] = user_stage["description"] == "0" ? `${user_name}是壞人` : `${user_name }是好人`
                         }
-                    }
+                        
 
-                    wait_time = config.announcementWaitTime
+                        global.game_list[room_name]['announcement'].push({
+                            'user' : user_stage["operation"] == 'role_info' ? user_stage['target'] : user_stage["user"],
+                            'operation' : user_stage["operation"],
+                            'description' : user_stage["operation"] != "died" ? user_stage["description"] : global.room_list[room_name]["room_user"][user_stage["user"][0]] + user_stage["description"],
+                            'allow' : user_stage["operation"] == 'role_info' ? user_stage["user"] : -1
+                        })
+                        // if someone died => user_state = died
+                        if(user_stage["operation"] == "died"){
+                            for(const [idx , user] of user_stage['user'].entries()){
+                                global.game_list[room_name]['died'].push(user)
+                            }
+                        }
+
+                        wait_time = config.announcementWaitTime
+                    }
+                    // vote & dialogue
+                    else if(Array('vote' , 'vote_or_not' , 'dialogue').includes(user_stage["operation"])){
+                        global.game_list[room_name]['information'].push(user_stage)
+
+                        for(var i of user_stage["user"]){
+                            global.game_list[room_name]['player'][i]['operation'][user_stage["operation"]] = 0
+                        }
+
+                        var tmp_timer = user_stage["operation"] == "dialogue" ? global.game_list[room_name]['dialogue_time'] : global.game_list[room_name]['operation_time']
+                        timer = Math.max(tmp_timer , timer)
+                        
+                        // update vote info
+                        if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2])){
+                            setTimeout(vote_func , 1000 , room_name , global.game_list[room_name]['stage'] , vote_func)
+
+                            if(result['stage_name'].split('-')[2] == "werewolf")
+                                global.game_list[room_name]['empty'] = 1
+                        }
+                        else if(user_stage["operation"] == "dialogue" && result['stage_name'].split('-')[2] == 'dialogue')
+                            global.game_list[room_name]['stage_description'] = global.room_list[room_name]["room_user"][user_stage["user"][0]] + global.game_list[room_name]['stage_description']
+                    }
+                    else{
+                        // console.log(user_stage)
+                        timer = -1    
+                        global.game_list[room_name]['announcement'].push({
+                            'user' : [],
+                            'operation' : "game_over",
+                            'description' : user_stage["description"],
+                            'allow' : -1
+                        })
+                        global.game_list[room_name]['information'].length = 0    
+                        break
+                    }
                 }
-                // vote & dialogue
-                else if(Array('vote' , 'vote_or_not' , 'dialogue').includes(user_stage["operation"])){
-                    global.game_list[room_name]['information'].push(user_stage)
+                
+                // suffle announcement
+                global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
 
-                    for(var i of user_stage["user"]){
-                        global.game_list[room_name]['player'][i]['operation'][user_stage["operation"]] = 0
-                    }
+                console.log(global.game_list[room_name]['information'])
+                console.log(global.game_list[room_name]['announcement'])
+                
+                // save log
+                var data = JSON.stringify({
+                    "timestamp" : (Date.now() - global.game_list[room_name]['start_time'])/1000 ,
+                    ...global.game_list[room_name]
+                });
 
-                    var tmp_timer = user_stage["operation"] == "dialogue" ? global.game_list[room_name]['dialogue_time'] : global.game_list[room_name]['operation_time']
-                    timer = Math.max(tmp_timer , timer)
-                    
-                    // update vote info
-                    if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2])){
-                        setTimeout(vote_func , 1000 , room_name , global.game_list[room_name]['stage'] , vote_func)
+                fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
 
-                        if(result['stage_name'].split('-')[2] == "werewolf")
-                            global.game_list[room_name]['empty'] = 1
-                    }
-                    else if(user_stage["operation"] == "dialogue" && result['stage_name'].split('-')[2] == 'dialogue')
-                        global.game_list[room_name]['stage_description'] = global.room_list[room_name]["room_user"][user_stage["user"][0]] + global.game_list[room_name]['stage_description']
+                
+
+                if(timer != -1){
+                    timer = timer + wait_time
+                    global.game_timer[room_name] = {
+                        timer : setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func) ,
+                        end_time : Date.now() + timer * 1000,
+                    } 
+                    global.game_list[room_name]['timer'] = timer 
                 }
+                    // setTimeout(stage_func , timer * 500, room_name , stage_func , vote_func , game_over_func) 
                 else{
-                    // console.log(user_stage)
-                    timer = -1    
-                    global.game_list[room_name]['announcement'].push({
-                        'user' : [],
-                        'operation' : "game_over",
-                        'description' : user_stage["description"],
-                        'allow' : -1
-                    })
-                    global.game_list[room_name]['information'].length = 0    
-                    break
+                    setTimeout(game_over_func , 10 * 1000 , room_name) 
+                    global.game_list[room_name]['timer'] = 10
                 }
             }
-            
-            // suffle announcement
-            global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
-
-            console.log(global.game_list[room_name]['information'])
-            console.log(global.game_list[room_name]['announcement'])
-            
-            // save log
-            var data = JSON.stringify({
-                "timestamp" : (Date.now() - global.game_list[room_name]['start_time'])/1000 ,
-                ...global.game_list[room_name]
-            });
-
-            fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
-
-            
-
-            if(timer != -1){
-                timer = timer + wait_time
-                global.game_timer[room_name] = {
-                    timer : setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func) ,
-                    end_time : Date.now() + timer * 1000,
-                } 
-                global.game_list[room_name]['timer'] = timer 
+            catch(e){
+                console.log(e)
             }
-                // setTimeout(stage_func , timer * 500, room_name , stage_func , vote_func , game_over_func) 
-            else{
-                setTimeout(game_over_func , 60 * 1000 , room_name) 
-                global.game_list[room_name]['timer'] = 60
-            }
+            
 
         });
 
