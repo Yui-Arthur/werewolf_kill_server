@@ -6,81 +6,9 @@ var room = require('./routes/room');
 var game = require('./routes/game');
 var app = express();
 
-global.room_list = {
-    "TESTROOM": {
-        "room_name": "TESTROOM",
-        "room_leader": "yui",
-        "room_user": [
-            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" 
-        ],
-        "user_color" : [
-            "#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" 
-        ],
-        "room_state" : "ready",
-        "game_setting": config.default_setting[7],
-    },
-    "TESTROOM1": {
-        "room_name": "TESTROOM1",
-        "room_leader": "yui",
-        "room_user": [
-            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" 
-        ],
-        "user_color" : [
-            "#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" 
-        ],
-        "room_state" : "ready",
-        "game_setting": config.default_setting[7],
-    },
-    "TESTROOM2": {
-        "room_name": "TESTROOM2",
-        "room_leader": "yui",
-        "room_user": [
-            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" 
-        ],
-        "user_color" : [
-            "#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" 
-        ],
-        "room_state" : "ready",
-        "game_setting": config.default_setting[7],
-    },
-    "TESTROOM3": {
-        "room_name": "TESTROOM3",
-        "room_leader": "yui",
-        "room_user": [
-            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" 
-        ],
-        "user_color" : [
-            "#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" 
-        ],
-        "room_state" : "ready",
-        "game_setting": config.default_setting[7],
-    },
-    "TESTROOM4": {
-        "room_name": "TESTROOM4",
-        "room_leader": "yui",
-        "room_user": [
-            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" 
-        ],
-        "user_color" : [
-            "#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" 
-        ],
-        "room_state" : "ready",
-        "game_setting": config.default_setting[7],
-    },
-    "TESTROOM5": {
-        "room_name": "TESTROOM5",
-        "room_leader": "yui",
-        "room_user": [
-            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" 
-        ],
-        "user_color" : [
-            "#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" 
-        ],
-        "room_state" : "ready",
-        "game_setting": config.default_setting[7],
-    },
-};
 
+
+global.room_list = {};
 global.game_list = {} 
 global.game_timer = {}
 

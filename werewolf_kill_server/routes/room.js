@@ -1,6 +1,7 @@
 var express = require('express');
 var room = require('../models/room');
 var router = express.Router();
+var config = require('../conf');
 
 /**
  *  get all rooms
@@ -176,6 +177,34 @@ router.route('/api/start_game/:room_name')
             })
             
 
+        } catch(e){
+            console.log(e);
+            res.sendStatus(500)
+        }
+    })
+
+router.route('/api/reset/')
+    /**
+     *  reset all room
+     *  rerturn OK or Error
+     * */ 
+    .get(async function(req,res){
+        try{
+            var color = ["#96c4c3" , "#a0c9c9" , "#abcfcf" , "#b5d5d5" , "#c0dbdb" , "#cae1e1" , "#d5e7e7"]
+            for(var i = 0; i <5; i++){
+                for(var j = 5; j <= 6 ; j++)
+                    global.room_list[`TESTROOM_${i}_${j}`] = {
+                        "room_name": `TESTROOM_${i}_${j}`,
+                        "room_leader": "Player_1",
+                        "room_user": Array.from({length: j}, (_, i) => `Player_${i + 1}`),
+                        "user_color" : Array.from({length: j}, (_, i) => color[i]),
+                        "room_state" : "ready",
+                        "game_setting": config.default_setting[7],
+                    }
+            }
+
+            res.sendStatus(200)
+            
         } catch(e){
             console.log(e);
             res.sendStatus(500)
