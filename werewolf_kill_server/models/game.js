@@ -81,7 +81,7 @@ module.exports = {
     game_over : async function(room_name){
         delete global.game_list[room_name]
         delete global.game_timer[room_name]
-        global.room_list[room_name]['state'] = "ready"
+        global.room_list[room_name]['room_state'] = "ready"
     },
 
     next_stage : async function(room_name , stage_func , vote_func , game_over_func){
