@@ -246,8 +246,16 @@ module.exports = {
 
         if(index <= -1)
             return {status: false , log: "user name error"}
+
+        var user_role = global.game_list[room_name]['player'][index]['user_role']
+        var teamate = []
+
+        for(const[ user_id , user_info ] of Object.entries(global.game_list[room_name]['player'])){
+            if(user_info['user_role'] == user_role && user_role == 'werewolf' && user_id != index)
+                teamate.push(user_id)
+        }
             
-        return {status: true, game_info : global.game_list[room_name]['player'][index] , player_id : index , log:"ok"}
+        return {status: true, game_info : {...global.game_list[room_name]['player'][index] , teamate:teamate} , player_id : index , log:"ok"}
     },
 
     get_player_position : async function(room_name){
