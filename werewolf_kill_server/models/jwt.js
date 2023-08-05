@@ -12,7 +12,10 @@ module.exports = {
     },
 
     verify_room_jwt : async function(token , room_name , leader , user_name = null){
-        return true
+        
+        if(! config.jwt_open)
+            return true
+
         try{
             decode = jwt.verify(token , config.SERECT)
             user_name = user_name != null ? user_name : decode.user_name;
@@ -30,13 +33,5 @@ module.exports = {
         
         
     },
-
-    // create_game_jwt : async function(user_name , room_name , leader){
-    //     return jwt.sign({ 
-    //         "user_name" : user_name ,
-    //         "user_id" : user_id,
-    //         "room_name" : room_name , "leader" : leader}, config.SERECT, { expiresIn: '100d' })
-    // },
-
 
 }

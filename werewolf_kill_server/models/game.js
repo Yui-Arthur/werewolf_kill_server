@@ -5,10 +5,26 @@ var grpc = require('@grpc/grpc-js');
 var werewolf_kill = require('./proto')
 var fs = require('fs');
 
+
+function sleep(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
+
 module.exports = {
 
     check_game_room : async function(room_name){
         return global.game_list.hasOwnProperty(room_name) && global.room_list[room_name]['room_state'] == "started"
+    },
+
+    check_grpc_server : async function(){
+        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        client.checkRoleList({role : [0,0,0,0,0], room_name : "1234"}, function (err, response) {
+            if(err)
+                global.grpc_server_check['status'] = 0
+            else
+                global.grpc_server_check['status'] = 1
+        })
+
     },
 
     get_vote_info: async function(room_name , current_stage , vote_func){
@@ -16,6 +32,7 @@ module.exports = {
 
         if(current_stage !=  global.game_list[room_name]['stage'])
             return
+
 
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.voteInfo({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result){
@@ -36,14 +53,16 @@ module.exports = {
         
     },
 
-    skip_stage : async function(room_name , stage_name , token){
+    skip_stage : async function(room_name , stage_name , token , user_name){
         token = token.replace('Bearer ', '')
 
         if(!await this.check_game_room(room_name))
             return{status: false,  log:"room not found or game is not started"}  
 
-            
-        if(!await jwt_op.verify_room_jwt(token , room_name , false))
+        if(! global.grpc_server_check['status'])
+            return{status: false,  log:"grpc server is not available"}      
+
+        if(!await jwt_op.verify_room_jwt(token , room_name , false , user_name))
             return{status: false,  log:"jwt error"}
 
         // if(global.game_list[room_name]["stage"] != stage_name)
@@ -61,7 +80,7 @@ module.exports = {
         //     return {status: false,  log:"stage error"}
 
 
-        if(global.game_timer[room_name]['end_time'] - Date.now() <= 5000)
+        if(global.game_timer[room_name]['end_time'] - Date.now() <= Math.abs(5000))
             return {status: false,  log:"timer less then 5 seconds , please wait"}
 
         clearTimeout(global.game_timer[room_name]['timer'])
@@ -82,30 +101,42 @@ module.exports = {
         delete global.game_list[room_name]
         delete global.game_timer[room_name]
         global.room_list[room_name]['room_state'] = "ready"
+        if(Object.keys(global.game_list).length() == 0){
+            clearInterval(global.grpc_server_check['timer'])
+            global.grpc_server_check['timer'] = null
+        }
     },
 
     next_stage : async function(room_name , stage_func , vote_func , game_over_func){
-        try{
-            // vote result stage
-            if(Array('vote1' , 'vote2').includes(global.game_list[room_name]['stage'].split('-')[2])){
-                global.game_list[room_name]['empty'] = 2
-                global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
-            }
-            else
-                global.game_list[room_name]['empty'] = 0
-    
-            // set died state
-            for(const user of global.game_list[room_name]['died']){
-                global.game_list[room_name]['player'][user]['user_state'] = "died"
-            }
-            
-        }
-        catch(e){
-            console.log(e)
-        }
-        
+
         if(!global.game_list.hasOwnProperty(room_name))
             return
+        // vote result stage
+        if(Array('vote1' , 'vote2').includes(global.game_list[room_name]['stage'].split('-')[2])){
+            global.game_list[room_name]['empty'] = 2
+            global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
+        }
+        else
+            global.game_list[room_name]['empty'] = 0
+
+        // set died state
+        for(const user of global.game_list[room_name]['died']){
+            global.game_list[room_name]['player'][user]['user_state'] = "died"
+        }
+        
+        // check grpc server
+        var retries = 20
+        while(! global.grpc_server_check['status']){
+            retries --
+            await sleep(1000)
+            console.log("grpc server is not available , retrying")
+
+            if(retries == 0){
+                console.log("grpc server is error , end game")
+                game_over_func(room_name)
+            }
+        }
+        
         // grpc next_stage func
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.nextStage({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result) {
@@ -287,7 +318,7 @@ module.exports = {
         
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
             // if(user_stage['user'].includes(user_id) || global.game_list[room_name]['player'][user_id]['user_state'] == "died"){
-            if(user_stage['user'].includes(user_id)){
+            if(user_stage['user'].includes(user_id) && global.game_list[room_name]['player'][user_id]['user_state'] != "died"){
                 information.push(user_stage)
 
                 if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf"){
@@ -300,7 +331,7 @@ module.exports = {
         var announcement = []
         for( const [index , user_stage] of global.game_list[room_name]["announcement"].entries()){
             // if(user_stage['allow'] == user_id || user_stage['allow'] == -1 || global.game_list[room_name]['player'][user_id]['user_state'] == "died")
-            if(user_stage['allow'] == user_id || user_stage['allow'] == -1)
+            if((user_stage['allow'] == user_id && global.game_list[room_name]['player'][user_id]['user_state'] != "died") || user_stage['allow'] == -1)
                 announcement.push({
                     'user' : user_stage["user"],
                     'operation' : user_stage["operation"],
@@ -354,6 +385,9 @@ module.exports = {
 
         if(!await this.check_game_room(room_name))
             return route_back({status: false,  log:"room not found or game is not started"}) 
+
+        if(! global.grpc_server_check['status'])
+            return{status: false,  log:"grpc server is not available"}      
 
         if(!await jwt_op.verify_room_jwt(token , room_name , false , user_name) && !await jwt_op.verify_room_jwt(token , room_name , true, user_name))
             return route_back({status: false,  log:"jwt error"})

@@ -70,7 +70,7 @@ module.exports = {
         "seer" : "預言家請睜眼，確認查驗身份",
         "witch" : "女巫請睜眼，請問要使用解藥，還是毒藥",
         "check_end1" : "天亮請睜眼",
-        "check_end2" : "天亮請睜眼，獵人昨晚死了，啟動身份",
+        "check_end2" : "遺言",
         "dialogue" : "玩家進行討論",
         "vote1" : "玩家進行投票",
         "vote2" : "上局平票，玩家進行第二輪投票",
@@ -80,4 +80,5 @@ module.exports = {
     },
     announcementWaitTime : 5,
     grpc_server_ip : process.env.grpc_server_ip || "localhost:50051" ,
+    jwt_open :  process.env.jwt_open || false
 }

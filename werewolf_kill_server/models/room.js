@@ -26,6 +26,9 @@ function formatDate(date) {
         ].join('_')
     );
 }
+function sleep(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+}
 
 module.exports = {
 
@@ -196,18 +199,33 @@ module.exports = {
 
         if(global.room_list[room_name]['room_user'].length != global.room_list[room_name]['game_setting']['player_num'])
             return route_back({status: false , log: "number of people error"})
-
-        global.room_list[room_name]['room_state'] = "started"
-
-        
-        /** grpc game start**/
-        
+            
+            
+            
+        // set check grpc server
+        game.check_grpc_server()
+        var retries = 20
+        while(! global.grpc_server_check['status']){
+            retries --
+            await sleep(1000)
+            console.log("grpc server is not available , retrying")
+            
+            if(retries == 0){
+                console.log("grpc server is error , end game")
+                return route_back({status: false,  log:"grpc server is not available"})
+            }
+        }
+            
+        // game setting
         var role_list = Array(5) 
         for (const [key, value] of Object.entries(global.room_list[room_name]["game_setting"])) 
         {
             if(config.roleToIndex.hasOwnProperty(key))
-                role_list[config.roleToIndex[key]] = value
+            role_list[config.roleToIndex[key]] = value
         }
+            
+    
+        /** grpc game start**/
         
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.startGame({role : role_list, room_name : room_name}, function (err, response){
@@ -232,14 +250,17 @@ module.exports = {
                 'died' : [],
             }
 
+            // set init timer
             global.game_timer[room_name] = {
                 timer : setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over),
                 end_time : Date.now() + config.announcementWaitTime  * 1000
             }
-            // console.log(formatDate())
+            
+            // create log file
             global.game_list[room_name]['log_file'] = `./game_logs/${room_name}_${formatDate(new Date(global.game_list[room_name]['start_time']))}.log`
             fs.writeFileSync(global.game_list[room_name]["log_file"] , "")
             
+            // init user info
             for( const [idx, user_name] of global.room_list[room_name]['room_user'].entries()){
                 global.game_list[room_name]['player'][idx] = {
                     "user_name" : user_name,
@@ -250,7 +271,11 @@ module.exports = {
                 }
             }
 
+            // set grpc server check timer
+            if(global.grpc_server_check['timer'] == null)
+                global.grpc_server_check['timer'] = setInterval(game.check_grpc_server , 10 *1000)
             
+            global.room_list[room_name]['room_state'] = "started"
 
             return route_back({status: true,  log:"ok"})
         })

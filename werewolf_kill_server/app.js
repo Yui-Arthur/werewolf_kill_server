@@ -24,6 +24,10 @@ global.room_list = {
 };
 global.game_list = {} 
 global.game_timer = {}
+global.grpc_server_check = {
+    "timer" : null,
+    "status" : false
+}
 
 app.use(cors(config.corsOptions));
 app.use(bodyparser.json());
@@ -35,6 +39,6 @@ app.use(express.static('view'))
 
 app.listen(8001 , function(req , res ){
     console.log('node server is running...'); 
-    console.log(process.env)
-    console.log(`grpc api server ${config.grpc_server_ip}`)
+    console.log(`jwt setting : ${config.jwt_open}`)
+    console.log(`grpc api server : ${config.grpc_server_ip}`)
 })
