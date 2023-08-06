@@ -11,7 +11,7 @@ function padTo2Digits(num) {
 }
 
 function formatDate(date) {
-    console.log(date);
+    // console.log(date);
     return (
         [
         date.getFullYear(),
@@ -168,7 +168,7 @@ module.exports = {
 
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.checkRoleList({role : role_list, room_name : room_name}, function (err, response) {
-            console.log(response)
+            // console.log(response)
             if(err){
                 // console.log(err);
                 return route_back({status: false , log: "grpc srror"})

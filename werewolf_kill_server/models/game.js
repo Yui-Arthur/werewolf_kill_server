@@ -145,12 +145,13 @@ module.exports = {
                 console.log(err)
                 return 
             }
-            // clear prev announcement & information
             try {
+                // clear prev announcement & information
                 global.game_list[room_name]['information'].length = 0
                 global.game_list[room_name]['announcement'].length = 0
                 global.game_list[room_name]['vote_info'] = {}
                 global.game_list[room_name]['died'] = []
+                // reset player operation
                 for(var [user_id , value]  of Object.entries(global.game_list[room_name]["player"])){
                     value['operation'] = {}
                 }
@@ -171,23 +172,27 @@ module.exports = {
                         // seer role_info description
                         if(user_stage["operation"] == 'role_info'){
                             user_name = global.room_list[room_name]["room_user"][user_stage['target']]
-                            user_stage["description"] = user_stage["description"] == "0" ? `${user_name}是壞人` : `${user_name }是好人`
+                            user_stage["description"] = user_stage["description"] == "0" ? `${user_name}(${user_stage['target']})是壞人` : `${user_name}(${user_stage['target']})是好人`
                         }
                         
 
                         global.game_list[room_name]['announcement'].push({
+                            // role info = user(seer) , target(see player) => anno user(see player) 
                             'user' : user_stage["operation"] == 'role_info' ? user_stage['target'] : user_stage["user"],
                             'operation' : user_stage["operation"],
-                            'description' : user_stage["operation"] != "died" ? user_stage["description"] : global.room_list[room_name]["room_user"][user_stage["user"][0]] + user_stage["description"],
+                            // died => user(user id) descript 
+                            'description' : user_stage["operation"] != "died" ? user_stage["description"] : `${global.room_list[room_name]["room_user"][user_stage["user"][0]]}(${user_stage["user"]})${user_stage["description"]}`,
+                            // allow => role info : seer  , other -1
                             'allow' : user_stage["operation"] == 'role_info' ? user_stage["user"] : -1
                         })
-                        // if someone died => user_state = died
+                        // if someone died next stage => user_state = died
                         if(user_stage["operation"] == "died"){
                             for(const [idx , user] of user_stage['user'].entries()){
                                 global.game_list[room_name]['died'].push(user)
                             }
                         }
-
+                        
+                        // if have anno wait more second
                         wait_time = config.announcementWaitTime
                     }
                     // vote & dialogue
@@ -209,7 +214,7 @@ module.exports = {
                                 global.game_list[room_name]['empty'] = 1
                         }
                         else if(user_stage["operation"] == "dialogue" && result['stage_name'].split('-')[2] == 'dialogue')
-                            global.game_list[room_name]['stage_description'] = global.room_list[room_name]["room_user"][user_stage["user"][0]] + global.game_list[room_name]['stage_description']
+                            global.game_list[room_name]['stage_description'] = `${global.room_list[room_name]["room_user"][user_stage["user"][0]]}(${user_stage["user"][0]})${global.game_list[room_name]['stage_description']}`
                     }
                     else{
                         // console.log(user_stage)
@@ -225,15 +230,22 @@ module.exports = {
                     }
                 }
                 
+
+                // show logs
+                var timestamp = (Date.now() - global.game_list[room_name]['start_time'])/1000
+                console.log(`${room_name} (${timestamp}) : ${global.game_list[room_name]['stage']} (${global.game_list[room_name]['stage_description'] })`)
+                for(const info of global.game_list[room_name]['information'])
+                    console.log(`  Info:\n    user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
+                for(const info of global.game_list[room_name]['announcement'])
+                    console.log(`  Anno:\n    user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
+                // console.log(global.game_list[room_name]['information'])
+                // console.log(global.game_list[room_name]['announcement'])
                 // suffle announcement
                 global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
-
-                console.log(global.game_list[room_name]['information'])
-                console.log(global.game_list[room_name]['announcement'])
                 
                 // save log
                 var data = JSON.stringify({
-                    "timestamp" : (Date.now() - global.game_list[room_name]['start_time'])/1000 ,
+                    "timestamp" : timestamp ,
                     ...global.game_list[room_name]
                 });
 
