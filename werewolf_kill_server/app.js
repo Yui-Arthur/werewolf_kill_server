@@ -4,6 +4,7 @@ var cors = require('cors');
 var config = require('./conf');
 var room = require('./routes/room');
 var game = require('./routes/game');
+var game_model = require('./models/game')
 var app = express();
 
 
@@ -25,10 +26,10 @@ global.room_list = {
 global.game_list = {} 
 global.game_timer = {}
 global.grpc_server_check = {
-    "timer" : null,
+    "timer" : setInterval(game_model.check_grpc_server , 30 * 1000),
     "status" : false
 }
-
+console.log(global.grpc_server_check['timer'])
 app.use(cors(config.corsOptions));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -41,4 +42,5 @@ app.listen(8001 , function(req , res ){
     console.log('node server is running...'); 
     console.log(`jwt setting : ${config.jwt_open}`)
     console.log(`grpc api server : ${config.grpc_server_ip}`)
+    game_model.check_grpc_server()
 })

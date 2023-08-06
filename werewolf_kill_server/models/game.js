@@ -19,10 +19,14 @@ module.exports = {
     check_grpc_server : async function(){
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.checkRoleList({role : [0,0,0,0,0], room_name : "1234"}, function (err, response) {
-            if(err)
+            if(err){
                 global.grpc_server_check['status'] = 0
-            else
+                console.log(`[${new Date(Date.now())}] - grpc server is not available`) 
+            }
+            else{
                 global.grpc_server_check['status'] = 1
+                console.log(`[${new Date(Date.now())}] - grpc server is running`) 
+            }
         })
 
     },
@@ -101,10 +105,12 @@ module.exports = {
         delete global.game_list[room_name]
         delete global.game_timer[room_name]
         global.room_list[room_name]['room_state'] = "ready"
-        if(Object.keys(global.game_list).length() == 0){
+        if(Object.keys(global.game_list).length == 0){
+            var check_func = global.grpc_server_check['timer']._onTimeout
             clearInterval(global.grpc_server_check['timer'])
-            global.grpc_server_check['timer'] = null
+            global.grpc_server_check['timer'] = setInterval(check_func , 30 * 1000)
         }
+        console.log(`${room_name} game over`)
     },
 
     next_stage : async function(room_name , stage_func , vote_func , game_over_func){
@@ -451,10 +457,5 @@ module.exports = {
         
 
     }
-
-
-
-
-
-
 }
+

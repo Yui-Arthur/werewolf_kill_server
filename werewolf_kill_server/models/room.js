@@ -272,8 +272,8 @@ module.exports = {
             }
 
             // set grpc server check timer
-            if(global.grpc_server_check['timer'] == null)
-                global.grpc_server_check['timer'] = setInterval(game.check_grpc_server , 10 *1000)
+            clearInterval(global.grpc_server_check['timer'])
+            global.grpc_server_check['timer'] = setInterval(game.check_grpc_server , 10 * 1000)
             
             global.room_list[room_name]['room_state'] = "started"
 
