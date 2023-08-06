@@ -415,11 +415,17 @@ module.exports = {
         if(user_id <= -1)
             return route_back({status: false , log: "user name error"})
 
-        // console.log(global.game_list[room_name])
+        // update position
         global.game_list[room_name]['player'][user_id]['user_position'] = operation["position"]
+
+        var timestamp = (Date.now() - global.game_list[room_name]['start_time'])/1000
+        var logs = `${room_name} (${timestamp}) : ${user_name}(${user_id}) => ${operation['operation']}(${operation['target']}) - ${operation['chat']}`
+
         if(operation['operation'] != "None"){
-            if(! await this.check_operation(room_name , user_id , operation['target'] ,operation['operation'] , operation['stage_name']))
-            return  route_back({status : false , log : "operation error"})
+            if(! await this.check_operation(room_name , user_id , operation['target'] ,operation['operation'] , operation['stage_name'])){
+                console.log(`${logs} ... check return false`)
+                return  route_back({status : false , log : "operation error"})
+            }
             
             const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
             user_operation = {
@@ -436,21 +442,27 @@ module.exports = {
                 
             }
             // console.log(user_operation)
-
+            
             client.sendUserOperation(user_operation , function(err , response){
-                if(err)
+                if(err){
+                    console.log(`${logs} ... grpc error`)
                     return route_back({status: false,  log:"grpc error"})
+                }
                 else if(response.result){
+
                     var data = JSON.stringify({
-                        "timestamp" : (Date.now() - global.game_list[room_name]['start_time'])/1000,
+                        "timestamp" : timestamp,
                         ...user_operation
                     });
                     global.game_list[room_name]['player'][user_id]["operation"][operation['operation']] = 1
                     fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
+                    console.log(`${logs} ... ok`)
                     return route_back({status: true,  log:"ok"})
                 }
-                else
+                else{
+                    console.log(`${logs} ... grpc return false`)
                     return route_back({status: false,  log:"grpc operation false"})
+                }
             })
         }
 
