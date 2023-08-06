@@ -29,7 +29,6 @@ global.grpc_server_check = {
     "timer" : setInterval(game_model.check_grpc_server , 30 * 1000),
     "status" : false
 }
-console.log(global.grpc_server_check['timer'])
 app.use(cors(config.corsOptions));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
