@@ -13,6 +13,7 @@ services:
         dockerfile: dockerfile
       environment:
         grpc_server_ip : "grpc_server:50051"
+        jwt_open : True
     grpc_server:
       image: grpc_server
       container_name: grpc_server
