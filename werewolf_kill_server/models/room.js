@@ -232,7 +232,14 @@ module.exports = {
 
             if(err)
                 return route_back({status: false , log: "grpc error"})
-            
+
+            if(Object.keys(global.game_list).length == 0){
+                // set grpc server check timer
+                clearInterval(global.grpc_server_check['timer'])
+                global.grpc_server_check['timer'] = setInterval(game.check_grpc_server , 10 * 1000)
+                console.log("new game started , grpc check timer speed up to 10s")
+            }
+
             global.game_list[room_name] = {
                 'stage' : "check_role",
                 'stage_description' : "遊戲開始，請查看身分",
@@ -270,10 +277,6 @@ module.exports = {
                     "operation" : {},
                 }
             }
-
-            // set grpc server check timer
-            clearInterval(global.grpc_server_check['timer'])
-            global.grpc_server_check['timer'] = setInterval(game.check_grpc_server , 10 * 1000)
             
             global.room_list[room_name]['room_state'] = "started"
 

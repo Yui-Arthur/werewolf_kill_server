@@ -102,15 +102,20 @@ module.exports = {
     },
 
     game_over : async function(room_name){
+        // game over del all game info
         delete global.game_list[room_name]
         delete global.game_timer[room_name]
+        // reset the room state
         global.room_list[room_name]['room_state'] = "ready"
+
+        console.log(`${room_name} game over`)
+        // if no running game room => timer to 30s
         if(Object.keys(global.game_list).length == 0){
             var check_func = global.grpc_server_check['timer']._onTimeout
             clearInterval(global.grpc_server_check['timer'])
+            console.log("no running game room , grpc check timer resume 30s")
             global.grpc_server_check['timer'] = setInterval(check_func , 30 * 1000)
         }
-        console.log(`${room_name} game over`)
     },
 
     next_stage : async function(room_name , stage_func , vote_func , game_over_func){
@@ -331,14 +336,17 @@ module.exports = {
             return {status: false , log: "user name error"}
 
         var information = []
+        var announcement = []
         var vote_info = {}
         var empty = 0
         
+        // info
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
-            // if(user_stage['user'].includes(user_id) || global.game_list[room_name]['player'][user_id]['user_state'] == "died"){
+            // died player can't get info
             if(user_stage['user'].includes(user_id) && global.game_list[room_name]['player'][user_id]['user_state'] != "died"){
                 information.push(user_stage)
-
+                
+                // wolf can get vote_info when the stage is werewolf
                 if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf"){
                     vote_info = global.game_list[room_name]['vote_info']
                     empty = 1
@@ -346,9 +354,10 @@ module.exports = {
             }
         }
 
-        var announcement = []
+        // anno
         for( const [index , user_stage] of global.game_list[room_name]["announcement"].entries()){
-            // if(user_stage['allow'] == user_id || user_stage['allow'] == -1 || global.game_list[room_name]['player'][user_id]['user_state'] == "died")
+            
+            // died seer can't get role_info 
             if((user_stage['allow'] == user_id && global.game_list[room_name]['player'][user_id]['user_state'] != "died") || user_stage['allow'] == -1)
                 announcement.push({
                     'user' : user_stage["user"],
@@ -365,9 +374,11 @@ module.exports = {
             announcement : announcement,
             information : information,
             timer : global.game_list[room_name]['timer'],
+            // empty 0 = no vote , 1 = wolf vote (current stage), 2 = day vote (last stage)
             vote_info : global.game_list[room_name]['empty'] == 2 ? global.game_list[room_name]['prev_vote'] : vote_info,
+            // empty = 2 => all player get last stage vote_info
             empty : global.game_list[room_name]['empty'] == 2 ? global.game_list[room_name]['empty'] : empty,
-            player_position : await this.get_player_position(room_name),
+            // player_position : await this.get_player_position(room_name),
         }
         
         return {status: true, player_info : info , log:"ok"}
@@ -421,50 +432,49 @@ module.exports = {
         var timestamp = (Date.now() - global.game_list[room_name]['start_time'])/1000
         var logs = `${room_name} (${timestamp}) : ${user_name}(${user_id}) => ${operation['operation']}(${operation['target']}) - ${operation['chat']}`
 
-        if(operation['operation'] != "None"){
-            if(! await this.check_operation(room_name , user_id , operation['target'] ,operation['operation'] , operation['stage_name'])){
-                console.log(`${logs} ... check return false`)
-                return  route_back({status : false , log : "operation error"})
-            }
-            
-            const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
-            user_operation = {
-                user : user_id,
-                operation : operation['operation'],
-                target : operation['target'],
-                chat : operation['chat'],
-                room : {
-                    stage_name : operation['stage_name'],
-                    room_name : room_name,
-
-                }
-                
-                
-            }
-            // console.log(user_operation)
-            
-            client.sendUserOperation(user_operation , function(err , response){
-                if(err){
-                    console.log(`${logs} ... grpc error`)
-                    return route_back({status: false,  log:"grpc error"})
-                }
-                else if(response.result){
-
-                    var data = JSON.stringify({
-                        "timestamp" : timestamp,
-                        ...user_operation
-                    });
-                    global.game_list[room_name]['player'][user_id]["operation"][operation['operation']] = 1
-                    fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
-                    console.log(`${logs} ... ok`)
-                    return route_back({status: true,  log:"ok"})
-                }
-                else{
-                    console.log(`${logs} ... grpc return false`)
-                    return route_back({status: false,  log:"grpc operation false"})
-                }
-            })
+        // check user / targer / operation
+        if(! await this.check_operation(room_name , user_id , operation['target'] ,operation['operation'] , operation['stage_name'])){
+            console.log(`${logs} ... check return false`)
+            return  route_back({status : false , log : "operation error"})
         }
+        
+        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        // grpc proto
+        user_operation = {
+            user : user_id,
+            operation : operation['operation'],
+            target : operation['target'],
+            chat : operation['chat'],
+            room : {
+                stage_name : operation['stage_name'],
+                room_name : room_name,
+
+            }
+            
+        }
+        
+        client.sendUserOperation(user_operation , function(err , response){
+            if(err){
+                console.log(`${logs} ... grpc error`)
+                return route_back({status: false,  log:"grpc error"})
+            }
+            else if(response.result){
+
+                var data = JSON.stringify({
+                    "timestamp" : timestamp,
+                    ...user_operation
+                });
+                global.game_list[room_name]['player'][user_id]["operation"][operation['operation']] = 1
+                fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
+                console.log(`${logs} ... ok`)
+                return route_back({status: true,  log:"ok"})
+            }
+            else{
+                console.log(`${logs} ... grpc return false`)
+                return route_back({status: false,  log:"grpc operation false"})
+            }
+        })
+        
 
         
 
