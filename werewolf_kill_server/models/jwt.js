@@ -13,7 +13,7 @@ module.exports = {
 
     verify_room_jwt : async function(token , room_name , leader , user_name = null){
         
-        if(! config.jwt_open)
+        if(config.jwt_open == 0)
             return true
 
         try{

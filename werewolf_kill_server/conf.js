@@ -80,5 +80,5 @@ module.exports = {
     },
     announcementWaitTime : 5,
     grpc_server_ip : process.env.grpc_server_ip || "localhost:50051" ,
-    jwt_open :  process.env.jwt_open || false
+    jwt_open :  process.env.jwt_open || 0
 }
