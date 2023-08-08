@@ -66,16 +66,15 @@ module.exports = {
         4 : "hunter"
     },
     stageToDescription : {
-        "werewolf" : "天黑請閉眼，狼人請睜眼，請殺人",
+        "werewolf_dialogue" : "狼人進行討論" ,
+        "werewolf" : "狼人請殺人",
         "seer" : "預言家請睜眼，確認查驗身份",
         "witch" : "女巫請睜眼，請問要使用解藥，還是毒藥",
-        "check_end1" : "天亮請睜眼",
-        "check_end2" : "遺言",
         "dialogue" : "玩家進行討論",
         "vote1" : "玩家進行投票",
         "vote2" : "上局平票，玩家進行第二輪投票",
-        "hunter2" : "獵人被票出，啟動身份",
-        "check_end3" : "投票結果",
+        "check" : "TBD",
+        "hunter" : "TBD",
 
     },
     announcementWaitTime : 5,

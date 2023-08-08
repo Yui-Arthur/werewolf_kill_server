@@ -247,6 +247,7 @@ module.exports = {
                 'information' : [],
                 'timer' : config.announcementWaitTime,
                 'vote_info' : {},
+                'prev_vote' : {},
                 'empty' : 0,
                 'player_num' : global.room_list[room_name]['game_setting']['player_num'],
                 'operation_time' : global.room_list[room_name]['game_setting']['operation_time'],

@@ -127,8 +127,13 @@ module.exports = {
             global.game_list[room_name]['empty'] = 2
             global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
         }
+        // werewolf
+        else if(Array('werewolf').includes(global.game_list[room_name]['stage'].split('-')[2])){
+            global.game_list[room_name]['empty'] = 1
+            global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
+        }
         else
-            global.game_list[room_name]['empty'] = 0
+            global.game_list[room_name]['prev_vote'] = {} , global.game_list[room_name]['empty'] = 0
 
         // set died state
         for(const user of global.game_list[room_name]['died']){
@@ -177,8 +182,19 @@ module.exports = {
                 
                 // stage proccess
                 for(var [index , user_stage] of result['stage'].entries()){
+                    // check / hunter stage other => stage description
+                    if(Array('other').includes(user_stage["operation"])) {
+                        var stage_description = user_stage["description"]
+                        
+                        // replace $ to user_name(user_id)
+                        if(user_stage['target'].length != 0)
+                            stage_description = stage_description.replace('$' , `${global.room_list[room_name]["room_user"][user_stage["target"][0]]}(${user_stage["target"][0]})`)
+                        global.game_list[room_name]['stage_description'] = stage_description  
+                        
+                        wait_time = config.announcementWaitTime
+                    }
                     // died & chat & role_info => announcement
-                    if(Array('died' , 'chat' , 'role_info' , 'other').includes(user_stage["operation"])){
+                    else if(Array('died' , 'chat' , 'role_info').includes(user_stage["operation"])){
 
                         // seer role_info description
                         if(user_stage["operation"] == 'role_info'){
@@ -186,6 +202,11 @@ module.exports = {
                             user_stage["description"] = user_stage["description"] == "0" ? `${user_name}(${user_stage['target']})是壞人` : `${user_name}(${user_stage['target']})是好人`
                         }
                         
+                        // allow werewolf => wolf , role info => seer , other => -1
+                        var allow = 0
+                        if(user_stage["operation"] == 'chat' && user_stage['target'].length != 0) allow = user_stage['target']
+                        else if(user_stage["operation"] == 'role_info') allow = user_stage["user"]
+                        else allow = -1
 
                         global.game_list[room_name]['announcement'].push({
                             // role info = user(seer) , target(see player) => anno user(see player) 
@@ -193,8 +214,7 @@ module.exports = {
                             'operation' : user_stage["operation"],
                             // died => user(user id) descript 
                             'description' : user_stage["operation"] != "died" ? user_stage["description"] : `${global.room_list[room_name]["room_user"][user_stage["user"][0]]}(${user_stage["user"]})${user_stage["description"]}`,
-                            // allow => role info : seer  , other -1
-                            'allow' : user_stage["operation"] == 'role_info' ? user_stage["user"] : -1
+                            'allow' : allow
                         })
                         // if someone died next stage => user_state = died
                         if(user_stage["operation"] == "died"){
@@ -207,28 +227,27 @@ module.exports = {
                         wait_time = config.announcementWaitTime
                     }
                     // vote & dialogue
-                    else if(Array('vote' , 'vote_or_not' , 'dialogue').includes(user_stage["operation"])){
+                    else if(Array('vote' , 'vote_or_not' , 'dialogue' , 'werewolf_dialogue').includes(user_stage["operation"])){
                         global.game_list[room_name]['information'].push(user_stage)
 
+                        // record the operation
                         for(var i of user_stage["user"]){
                             global.game_list[room_name]['player'][i]['operation'][user_stage["operation"]] = 0
                         }
-
+                        // dialogue => dialogue time / other operation => operation_time
                         var tmp_timer = user_stage["operation"] == "dialogue" ? global.game_list[room_name]['dialogue_time'] : global.game_list[room_name]['operation_time']
+                        // if dialogue & other operations at same time , set the max of two
                         timer = Math.max(tmp_timer , timer)
                         
-                        // update vote info
-                        if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2])){
+                        // werewolf & vote1/2 stage need update vote info
+                        if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2]))
                             setTimeout(vote_func , 1000 , room_name , global.game_list[room_name]['stage'] , vote_func)
-
-                            if(result['stage_name'].split('-')[2] == "werewolf")
-                                global.game_list[room_name]['empty'] = 1
-                        }
+                        // stage dialogue need chage stage description => user_name(user_id) description
                         else if(user_stage["operation"] == "dialogue" && result['stage_name'].split('-')[2] == 'dialogue')
                             global.game_list[room_name]['stage_description'] = `${global.room_list[room_name]["room_user"][user_stage["user"][0]]}(${user_stage["user"][0]})${global.game_list[room_name]['stage_description']}`
                     }
+                    // end game
                     else{
-                        // console.log(user_stage)
                         timer = -1    
                         global.game_list[room_name]['announcement'].push({
                             'user' : [],
@@ -236,21 +255,24 @@ module.exports = {
                             'description' : user_stage["description"],
                             'allow' : -1
                         })
+                        // clear the info
                         global.game_list[room_name]['information'].length = 0    
                         break
                     }
                 }
                 
-
+                console.log(result)
                 // show logs
                 var timestamp = (Date.now() - global.game_list[room_name]['start_time'])/1000
                 console.log(`${room_name} (${timestamp}) : ${global.game_list[room_name]['stage']} (${global.game_list[room_name]['stage_description'] })`)
+                console.log(`  Info:`)
                 for(const info of global.game_list[room_name]['information'])
-                    console.log(`  Info:\n    user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
+                    console.log(`    user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
+                console.log(`  Anno:`)
                 for(const info of global.game_list[room_name]['announcement'])
-                    console.log(`  Anno:\n    user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
-                // console.log(global.game_list[room_name]['information'])
-                // console.log(global.game_list[room_name]['announcement'])
+                    console.log(`    user : ${info["user"]} , target : ${info["allow"]} , info : ${info["operation"]} (${info["description"]})`)
+                console.log(`  Vote: \n    ` , global.game_list[room_name]['prev_vote'])
+                
                 // suffle announcement
                 global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
                 
@@ -263,7 +285,7 @@ module.exports = {
                 fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
 
                 
-
+                // game is not end
                 if(timer != -1){
                     timer = timer + wait_time
                     global.game_timer[room_name] = {
@@ -272,8 +294,9 @@ module.exports = {
                     } 
                     global.game_list[room_name]['timer'] = timer 
                 }
-                    // setTimeout(stage_func , timer * 500, room_name , stage_func , vote_func , game_over_func) 
+                // end game
                 else{
+                    // after 10 second => reset the game room 
                     setTimeout(game_over_func , 10 * 1000 , room_name) 
                     global.game_list[room_name]['timer'] = 10
                 }
@@ -304,6 +327,7 @@ module.exports = {
         var user_role = global.game_list[room_name]['player'][index]['user_role']
         var teamate = []
 
+        // werewolf can get teemate
         for(const[ user_id , user_info ] of Object.entries(global.game_list[room_name]['player'])){
             if(user_info['user_role'] == user_role && user_role == 'werewolf' && user_id != index)
                 teamate.push(user_id)
@@ -345,12 +369,6 @@ module.exports = {
             // died player can't get info
             if(user_stage['user'].includes(user_id) && global.game_list[room_name]['player'][user_id]['user_state'] != "died"){
                 information.push(user_stage)
-                
-                // wolf can get vote_info when the stage is werewolf
-                if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf"){
-                    vote_info = global.game_list[room_name]['vote_info']
-                    empty = 1
-                }
             }
         }
 
@@ -367,17 +385,23 @@ module.exports = {
             
         }
 
+        // empty 0 = no vote , 1 = wolf vote (last stage), 2 = day vote (last stage)
+        // empty = 1 wolf vote => only werewolf can get vote info
+        if(global.game_list[room_name]['empty'] == 1 && global.game_list[room_name]['player'][user_id]['user_role'] == 'werewolf')
+            vote_info = global.game_list[room_name]['prev_vote'] , empty = 1
+        // empty = 2 all player can get vote info
+        else if(global.game_list[room_name]['empty'] == 2)
+            vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+
 
         var info = {
             stage : global.game_list[room_name]['stage'],
             stage_description : global.game_list[room_name]['stage_description'],
             announcement : announcement,
             information : information,
-            timer : global.game_list[room_name]['timer'],
-            // empty 0 = no vote , 1 = wolf vote (current stage), 2 = day vote (last stage)
-            vote_info : global.game_list[room_name]['empty'] == 2 ? global.game_list[room_name]['prev_vote'] : vote_info,
-            // empty = 2 => all player get last stage vote_info
-            empty : global.game_list[room_name]['empty'] == 2 ? global.game_list[room_name]['empty'] : empty,
+            timer : global.game_list[room_name]['timer'],            
+            vote_info : vote_info,
+            empty : empty,
             // player_position : await this.get_player_position(room_name),
         }
         
@@ -386,6 +410,8 @@ module.exports = {
 
     check_operation : async function(room_name , user_id , target , operation , stage){
 
+        // server stage and client stage not match
+        // or player is died
         if(global.game_list[room_name]['stage'] != stage && global.game_list[room_name]['player']['user_state'] == 'died')
             return false
 
@@ -396,9 +422,14 @@ module.exports = {
             if(user_stage['operation'] == "vote_or_not")
                 target_list.push(-1)
 
+            // user have in info user
+            // user operation is same with info operation
+            // user target is in info target
             if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && user_stage['target'].includes(target))
                 return true
-            //  dialogue not check target
+            // dialogue not check target
+            // user have in info user
+            // user operation is same with info operation
             else if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && user_stage['operation'] == "dialogue")
                 return true
             
@@ -464,7 +495,9 @@ module.exports = {
                     "timestamp" : timestamp,
                     ...user_operation
                 });
+                // record the operation have been done
                 global.game_list[room_name]['player'][user_id]["operation"][operation['operation']] = 1
+                // save logs
                 fs.appendFileSync(global.game_list[room_name]['log_file'], data + "\n");
                 console.log(`${logs} ... ok`)
                 return route_back({status: true,  log:"ok"})
