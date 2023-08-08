@@ -274,7 +274,6 @@ module.exports = {
                     "user_name" : user_name,
                     "user_role" : config.indexToRole[response['role'][idx]],
                     "user_state" : "alive", 
-                    "user_position" : [0,0],
                     "operation" : {},
                 }
             }

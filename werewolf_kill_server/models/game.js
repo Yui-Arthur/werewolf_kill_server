@@ -336,15 +336,6 @@ module.exports = {
         return {status: true, game_info : {...global.game_list[room_name]['player'][index] , teamate:teamate} , player_id : index , log:"ok"}
     },
 
-    get_player_position : async function(room_name){
-        var player_position = Array(global.game_list[room_name]['player_num'])
-        for(const [player_id, player_info] of Object.entries(global.game_list[room_name]['player'])){
-            player_position[player_id] = player_info["user_position"]
-        }
-
-        return player_position
-    },
-
     get_information : async function(room_name, user_name , token){
         token = token.replace('Bearer ', '')
 
@@ -402,7 +393,6 @@ module.exports = {
             timer : global.game_list[room_name]['timer'],            
             vote_info : vote_info,
             empty : empty,
-            // player_position : await this.get_player_position(room_name),
         }
         
         return {status: true, player_info : info , log:"ok"}
@@ -456,9 +446,6 @@ module.exports = {
 
         if(user_id <= -1)
             return route_back({status: false , log: "user name error"})
-
-        // update position
-        global.game_list[room_name]['player'][user_id]['user_position'] = operation["position"]
 
         var timestamp = (Date.now() - global.game_list[room_name]['start_time'])/1000
         var logs = `${room_name} (${timestamp}) : ${user_name}(${user_id}) => ${operation['operation']}(${operation['target']}) - ${operation['chat']}`
