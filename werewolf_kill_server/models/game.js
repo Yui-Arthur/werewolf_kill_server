@@ -264,7 +264,7 @@ module.exports = {
                     }
                 }
                 
-                console.log(result)
+                // console.log(result)
                 // show logs
                 var timestamp = (Date.now() - global.game_list[room_name]['start_time'])/1000
                 console.log(`${room_name} (${timestamp}) : ${global.game_list[room_name]['stage']} (${global.game_list[room_name]['stage_description'] }) timer ${timer}s / wait ${wait_time}s`)
@@ -373,7 +373,7 @@ module.exports = {
             // died seer can't get role_info 
             // died werewolf can get werewolf_dialogue
             if((user_stage['allow'] == user_id && global.game_list[room_name]['player'][user_id]['user_state'] != "died") || 
-                user_stage['allow'].includes(user_id) ||  user_stage['allow'] == -1 )
+                user_stage['allow'] == -1 || (Array.isArray(user_stage['allow']) && user_stage['allow'].includes(user_id)))
                 announcement.push({
                     'user' : user_stage["user"],
                     'operation' : user_stage["operation"],
