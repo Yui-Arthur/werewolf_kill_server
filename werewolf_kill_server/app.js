@@ -39,7 +39,10 @@ app.use(express.static('view'))
 
 app.listen(8001 , function(req , res ){
     console.log('node server is running...'); 
-    console.log(`jwt setting : ${config.jwt_open}`)
-    console.log(`grpc api server : ${config.grpc_server_ip}`)
+    console.log("-------------- Setting --------------")
+    console.log(`  jwt setting : ${config.jwt_open}`)
+    console.log(`  grpc api server : ${config.grpc_server_ip}`)
+    console.log(`  werewolf_realtime_vote_info : ${config.werewolf_realtime_vote_info}`)
+    console.log("-------------------------------------")
     game_model.check_grpc_server()
 })

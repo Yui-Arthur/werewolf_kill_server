@@ -83,8 +83,8 @@ module.exports = {
         // if(global.game_list[room_name]["stage"] != stage_name)
         //     return {status: false,  log:"stage error"}
 
-        if(global.game_timer[room_name]['end_time'] - Date.now() <= Math.abs(5000))
-            return {status: false,  log:"timer less then 5 seconds , please wait"}
+        if(global.game_timer[room_name]['end_time'] - Date.now() <= Math.abs(3000))
+            return {status: false,  log:"timer less then 3 seconds , please wait"}
 
         clearTimeout(global.game_timer[room_name]['timer'])
         global.game_timer[room_name]['end_time'] = Date.now()
@@ -243,8 +243,14 @@ module.exports = {
                         timer = Math.max(tmp_timer , timer)
                         
                         // werewolf & vote1/2 stage need update vote info
-                        if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2]))
+                        if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2])){
                             setTimeout(vote_func , 1000 , room_name , global.game_list[room_name]['stage'] , vote_func)
+                            
+                            // werewolf stage if werewolf_realtime_vote_info == 1 => reeltime vote info
+                            if(result['stage_name'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
+                                global.game_list[room_name]['empty'] = 1
+
+                        }
                         // stage dialogue need chage stage description => user_name(user_id) description
                         else if(user_stage["operation"] == "dialogue" && result['stage_name'].split('-')[2] == 'dialogue')
                             global.game_list[room_name]['stage_description'] = `${global.room_list[room_name]["room_user"][user_stage["user"][0]]}(${user_stage["user"][0]})${global.game_list[room_name]['stage_description']}`
@@ -382,10 +388,19 @@ module.exports = {
             
         }
 
-        // empty 0 = no vote , 1 = wolf vote (last stage), 2 = day vote (last stage)
+        // empty 0 = no vote , 
+        // empty 1 = wolf vote (realtime and last stage)
+        // empty 2 = day vote (last stage)
         // empty = 1 wolf vote => only werewolf can get vote info
-        if(global.game_list[room_name]['empty'] == 1 && global.game_list[room_name]['player'][user_id]['user_role'] == 'werewolf')
-            vote_info = global.game_list[room_name]['prev_vote'] , empty = 1
+        if(global.game_list[room_name]['empty'] == 1 && global.game_list[room_name]['player'][user_id]['user_role'] == 'werewolf'){
+            
+            // werewolf stage => realtime 
+            if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
+                vote_info = global.game_list[room_name]['vote_info'] , empty = 1
+            // last stage werewolf vote info (last stage send to front empty = 2)
+            else
+                vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+        }
         // empty = 2 all player can get vote info
         else if(global.game_list[room_name]['empty'] == 2)
             vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
@@ -408,7 +423,7 @@ module.exports = {
 
         // server stage and client stage not match
         // or player is died
-        if(global.game_list[room_name]['stage'] != stage && global.game_list[room_name]['player']['user_state'] == 'died')
+        if(global.game_list[room_name]['stage'] != stage || global.game_list[room_name]['player']['user_state'] == 'died')
             return false
 
 
