@@ -49,7 +49,7 @@ module.exports = {
             }
 
             for(const [idx , user_state] of result.state.entries()){
-                if(user_state !=-1)
+                if(user_state != -2)
                     global.game_list[room_name]['vote_info'][idx] = user_state
             }
 
@@ -142,8 +142,14 @@ module.exports = {
             global.game_list[room_name]['prev_vote'] = {} , global.game_list[room_name]['empty'] = 0
 
         // set died state
-        for(const user of global.game_list[room_name]['died']){
-            global.game_list[room_name]['player'][user]['user_state'] = "died"
+        for(const [user , cnt] of Object.entries(global.game_list[room_name]['died'])){
+            if(cnt == 0){
+                global.game_list[room_name]['player'][user]['user_state'] = "died"
+                delete global.game_list[room_name]['died'][user]
+                console.log(`${room_name} - ${global.game_list[room_name]['player'][user]['user_name']}(${user}) turn died`)
+            }
+            else
+                global.game_list[room_name]['died'][user] = cnt-1
         }
         
         // check grpc server
@@ -172,7 +178,7 @@ module.exports = {
                 global.game_list[room_name]['information'].length = 0
                 global.game_list[room_name]['announcement'].length = 0
                 global.game_list[room_name]['vote_info'] = {}
-                global.game_list[room_name]['died'] = []
+                // global.game_list[room_name]['died'] = []
                 // reset player operation
                 for(var [user_id , value]  of Object.entries(global.game_list[room_name]["player"])){
                     value['operation'] = {}
@@ -222,11 +228,9 @@ module.exports = {
                             'description' : user_stage["operation"] != "died" ? user_stage["description"] : `${global.room_list[room_name]["room_user"][user_stage["user"][0]]}(${user_stage["user"]})${user_stage["description"]}`,
                             'allow' : allow
                         })
-                        // if someone died next stage => user_state = died
+                        // if someone died next {target} stage => user_state = died
                         if(user_stage["operation"] == "died"){
-                            for(const [idx , user] of user_stage['user'].entries()){
-                                global.game_list[room_name]['died'].push(user)
-                            }
+                            global.game_list[room_name]['died'][user_stage['user'][0] ] =user_stage['target'][0]
                         }
                         
                         // if have anno wait more second

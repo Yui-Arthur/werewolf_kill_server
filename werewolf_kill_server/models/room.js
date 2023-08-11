@@ -207,7 +207,7 @@ module.exports = {
         var retries = 20
         while(! global.grpc_server_check['status']){
             retries --
-            await sleep(200)
+            await sleep(500)
             console.log(`${room_name} : grpc server is not available , retrying ... ${retries}`)
             
             if(retries == 0){
@@ -255,7 +255,7 @@ module.exports = {
                 'start_time' : Date.now(),
                 'log_file' :  "",
                 'player' : {},
-                'died' : [],
+                'died' : {},
             }
 
             // set init timer

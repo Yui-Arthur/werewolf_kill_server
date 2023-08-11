@@ -95,8 +95,6 @@ router.route('/api/create_room/:user_name/:user_color')
                 "room_name" : room_name,
                 "user_token" : user_token
             })
-
-            console.log(global.room_list)
         } catch(e){
             console.log(e);
             res.sendStatus(500)
