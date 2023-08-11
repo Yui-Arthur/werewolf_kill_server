@@ -66,7 +66,7 @@ module.exports = {
         if(! global.grpc_server_check['status'])
             return{status: false,  log:"grpc server is not available"}      
 
-        if(!await jwt_op.verify_room_jwt(token , room_name , false , user_name))
+        if(!await jwt_op.verify_room_jwt(token , room_name , false , user_name) && !await jwt_op.verify_room_jwt(token , room_name , true, user_name))
             return{status: false,  log:"jwt error"}
 
         // if(global.game_list[room_name]["stage"] != stage_name)
