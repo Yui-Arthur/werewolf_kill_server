@@ -40,6 +40,9 @@ module.exports = {
 
         const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
         client.voteInfo({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result){
+
+            global.game_list[room_name]['vote_info'] = {}
+
             if(err){
                 console.log(err)
                 // setTimeout(vote_func , 1000 , room_name , current_stage , vote_func)
