@@ -146,7 +146,7 @@ module.exports = {
             if(cnt == 0){
                 global.game_list[room_name]['player'][user]['user_state'] = "died"
                 delete global.game_list[room_name]['died'][user]
-                console.log(`${room_name} - ${global.game_list[room_name]['player'][user]['user_name']}(${user}) turn died`)
+                // console.log(`${room_name} - ${global.game_list[room_name]['player'][user]['user_name']}(${user}) turn died`)
             }
             else
                 global.game_list[room_name]['died'][user] = cnt-1
@@ -280,15 +280,29 @@ module.exports = {
                 // console.log(result)
                 // show logs
                 var timestamp = (Date.now() - global.game_list[room_name]['start_time'])/1000
+                // basic 
                 console.log(`${room_name} (${timestamp}) : ${global.game_list[room_name]['stage']} (${global.game_list[room_name]['stage_description'] }) timer ${timer}s / wait ${wait_time}s`)
+                // info
                 console.log(`  Info:`)
                 for(const info of global.game_list[room_name]['information'])
                     console.log(`    user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
+                // anno
                 console.log(`  Anno:`)
                 for(const info of global.game_list[room_name]['announcement'])
                     console.log(`    user : ${info["user"]} , allow : ${info["allow"]} , info : ${info["operation"]} (${info["description"]})`)
-                console.log(`  Vote: \n    ` , global.game_list[room_name]['prev_vote'])
-                
+                // vote
+                console.log(`  Vote: `)
+                var vote_str = ""
+                for(const [user , vote] of Object.entries(global.game_list[room_name]['prev_vote']))
+                    vote_str += `${user} => ${vote} , `
+                if(vote_str != "") console.log(`    ${vote_str}`)
+                // died
+                console.log(`  Died: `)
+                var died_str = ""
+                for(const [user , cnt] of Object.entries(global.game_list[room_name]['died']))
+                    died_str += `${user}(${cnt}) , `
+                if(died_str != "") console.log(`    ${died_str}`)
+
                 // suffle announcement
                 global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
                 
