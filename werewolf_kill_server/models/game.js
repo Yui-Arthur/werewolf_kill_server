@@ -305,6 +305,9 @@ module.exports = {
 
                 // suffle announcement
                 global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
+                // 
+                if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf_dialogue")
+                    global.game_list[room_name]['stage_description'] += "#" + Math.floor(Math.random() * 1000);
                 
                 // save log
                 var data = JSON.stringify({
