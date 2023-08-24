@@ -31,7 +31,7 @@ module.exports = {
 
     },
 
-    get_vote_info: async function(room_name , current_stage , vote_func){
+    get_vote_info: async function(room_name , current_stage , vote_func , copy_to_prev = false){
         // grpc vote_info func
 
         if(current_stage !=  global.game_list[room_name]['stage'])
@@ -52,6 +52,10 @@ module.exports = {
                 if(user_state != -2)
                     global.game_list[room_name]['vote_info'][idx] = user_state
             }
+            
+            // vote1 & vote2 stage will copy the vote info to prev_vote
+            if(copy_to_prev)
+                global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
 
             if(current_stage ==  global.game_list[room_name]['stage'])
                 setTimeout(vote_func, 1000 , room_name , current_stage , vote_func)
@@ -131,12 +135,14 @@ module.exports = {
         // vote result stage
         if(Array('vote1' , 'vote2').includes(global.game_list[room_name]['stage'].split('-')[2])){
             global.game_list[room_name]['empty'] = 2
-            global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
+            // update vote info & copy to prev_vote
+            vote_func(room_name , global.game_list[room_name]['stage'] , vote_func , true)
         }
         // werewolf
         else if(Array('werewolf').includes(global.game_list[room_name]['stage'].split('-')[2])){
             global.game_list[room_name]['empty'] = 1
-            global.game_list[room_name]['prev_vote'] = global.game_list[room_name]['vote_info']
+            // update vote info & copy to prev_vote
+            vote_func(room_name , global.game_list[room_name]['stage'] , vote_func , true)
         }
         else
             global.game_list[room_name]['prev_vote'] = {} , global.game_list[room_name]['empty'] = 0
@@ -236,7 +242,7 @@ module.exports = {
                         // if have anno wait more second
                         wait_time = config.announcementWaitTime
                     }
-                    // vote & dialogue
+                    // vote & dialogue 
                     else if(Array('vote' , 'vote_or_not' , 'dialogue' , 'werewolf_dialogue').includes(user_stage["operation"])){
                         global.game_list[room_name]['information'].push(user_stage)
 
@@ -249,13 +255,11 @@ module.exports = {
                         // if dialogue & other operations at same time , set the max of two
                         timer = Math.max(tmp_timer , timer)
                         
-                        // werewolf & vote1/2 stage need update vote info
-                        if(Array("werewolf" , "vote1" , "vote2").includes(result['stage_name'].split('-')[2])){
-                            setTimeout(vote_func , 1000 , room_name , global.game_list[room_name]['stage'] , vote_func)
+                        // werewolf_realtime_vote_info == 1 => werewolf reeltime vote info
+                        if(Array("werewolf").includes(result['stage_name'].split('-')[2]) && config.werewolf_realtime_vote_info == 1){
                             
-                            // werewolf stage if werewolf_realtime_vote_info == 1 => reeltime vote info
-                            if(result['stage_name'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
-                                global.game_list[room_name]['empty'] = 1
+                            setTimeout(vote_func , 500 , room_name , global.game_list[room_name]['stage'] , vote_func)
+                            global.game_list[room_name]['empty'] = 1
 
                         }
                         // stage dialogue need chage stage description => user_name(user_id) description
@@ -452,7 +456,7 @@ module.exports = {
 
 
         for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
-            var target_list = user_stage['target']
+            var target_list = Array.from(user_stage['target'])
             // vote_or_not can vote -1
             if(user_stage['operation'] == "vote_or_not")
                 target_list.push(-1)
@@ -460,7 +464,7 @@ module.exports = {
             // user have in info user
             // user operation is same with info operation
             // user target is in info target
-            if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && user_stage['target'].includes(target))
+            if(user_stage['user'].includes(user_id) && user_stage['operation'] == operation && target_list.includes(target))
                 return true
             // dialogue / werewolf_dialogue not check target
             // user have in info user
