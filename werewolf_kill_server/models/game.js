@@ -115,12 +115,12 @@ module.exports = {
         global.room_list[room_name]['room_state'] = "ready"
 
         console.log(`${room_name} game over`)
-        // if no running game room => timer to 30s
+        // if no running game room => timer to 60s
         if(Object.keys(global.game_list).length == 0){
             var check_func = global.grpc_server_check['timer']._onTimeout
             clearInterval(global.grpc_server_check['timer'])
-            console.log("no running game room , grpc check timer resume 30s")
-            global.grpc_server_check['timer'] = setInterval(check_func , 30 * 1000)
+            console.log("no running game room , grpc check timer resume 60s")
+            global.grpc_server_check['timer'] = setInterval(check_func , 60 * 1000)
         }
     },
 

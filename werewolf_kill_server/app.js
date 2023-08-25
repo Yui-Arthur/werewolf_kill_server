@@ -28,7 +28,7 @@ global.room_list = {
 global.game_list = {} 
 global.game_timer = {}
 global.grpc_server_check = {
-    "timer" : setInterval(game_model.check_grpc_server , 30 * 1000),
+    "timer" : setInterval(game_model.check_grpc_server , 60 * 1000),
     "status" : false
 }
 
