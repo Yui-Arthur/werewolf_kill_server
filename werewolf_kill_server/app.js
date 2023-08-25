@@ -5,6 +5,7 @@ var config = require('./conf');
 var room = require('./routes/room');
 var game = require('./routes/game');
 var game_model = require('./models/game')
+var room_model = require('./models/room')
 var app = express();
 
 
@@ -21,6 +22,7 @@ global.room_list = {
         ],
         "room_state" : "ready",
         "game_setting": config.default_setting[7],
+        "last_used" : Date.now()
     }
 };
 global.game_list = {} 
@@ -29,6 +31,10 @@ global.grpc_server_check = {
     "timer" : setInterval(game_model.check_grpc_server , 30 * 1000),
     "status" : false
 }
+
+// every 10 minutes check idel room
+setInterval(room_model.delete_idel_room , 10 * 60 * 1000)
+
 app.use(cors(config.corsOptions));
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: true }));
@@ -45,4 +51,5 @@ app.listen(8001 , function(req , res ){
     console.log(`  werewolf_realtime_vote_info : ${config.werewolf_realtime_vote_info}`)
     console.log("-------------------------------------")
     game_model.check_grpc_server()
+    room_model.delete_idel_room()
 })

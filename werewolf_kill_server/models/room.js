@@ -50,7 +50,8 @@ module.exports = {
             "room_user" : [user_name],
             "user_color" : [`#${user_color}`],
             "room_state" : "ready",
-            "game_setting" : config.default_setting[7]
+            "game_setting" : config.default_setting[7],
+            "last_used" : Date.now()
         };
 
         return [room_name , user_token];
@@ -256,6 +257,7 @@ module.exports = {
                 'log_file' :  "",
                 'player' : {},
                 'died' : {},
+                'is_handover' : false,
             }
 
             // set init timer
@@ -279,12 +281,34 @@ module.exports = {
             }
             
             global.room_list[room_name]['room_state'] = "started"
+            global.room_list[room_name]['last_used'] = Date.now()
 
             return route_back({status: true,  log:"ok"})
         })
 
     },
    
+    delete_idel_room : function(){
+
+        console.log(`[${new Date(Date.now())}] - checking idel room`) 
+
+        for( const [room_name , room_info] of Object.entries(global.room_list)){
+
+            var logs = ` |- ${room_name} is ${room_info["room_state"]} / last used at ${formatDate(new Date(room_info["last_used"]))} ...`
+
+            // if room last used exceed 60 mintuse => delete it
+            if(Date.now() - room_info["last_used"] >= 60 * 60 * 1000 ){
+                logs += " timeout , delete room"
+                delete global.room_list[room_name]
+                delete global.game_list[room_name]
+            }
+            else
+                logs += " ok"
+
+            console.log(logs)
+        }
+
+    }
 
 }
 

@@ -128,6 +128,9 @@ module.exports = {
 
         if(!global.game_list.hasOwnProperty(room_name))
             return
+
+        // set handover tag => true
+        global.game_list[room_name]['is_handover'] = true
         
         // set timer end time to prevent skip 2 stage
         global.game_timer[room_name]['end_time'] = Date.now()
@@ -287,25 +290,25 @@ module.exports = {
                 // basic 
                 console.log(`${room_name} (${timestamp}) : ${global.game_list[room_name]['stage']} (${global.game_list[room_name]['stage_description'] }) timer ${timer}s / wait ${wait_time}s`)
                 // info
-                console.log(`  Info:`)
+                console.log(` |- Info:`)
                 for(const info of global.game_list[room_name]['information'])
-                    console.log(`    user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
+                    console.log(`   |- user : ${info["user"]} , target : ${info["target"]} , info : ${info["operation"]} (${info["description"]})`)
                 // anno
-                console.log(`  Anno:`)
+                console.log(` |- Anno:`)
                 for(const info of global.game_list[room_name]['announcement'])
-                    console.log(`    user : ${info["user"]} , allow : ${info["allow"]} , info : ${info["operation"]} (${info["description"]})`)
+                    console.log(`   |- user : ${info["user"]} , allow : ${info["allow"]} , info : ${info["operation"]} (${info["description"]})`)
                 // vote
-                console.log(`  Vote: `)
+                console.log(` |- Vote: `)
                 var vote_str = ""
                 for(const [user , vote] of Object.entries(global.game_list[room_name]['prev_vote']))
                     vote_str += `${user} => ${vote} , `
-                if(vote_str != "") console.log(`    ${vote_str}`)
+                if(vote_str != "") console.log(`   |- ${vote_str}`)
                 // died
-                console.log(`  Died: `)
+                console.log(` |- Died: `)
                 var died_str = ""
                 for(const [user , cnt] of Object.entries(global.game_list[room_name]['died']))
                     died_str += `${user}(${cnt}) , `
-                if(died_str != "") console.log(`    ${died_str}`)
+                if(died_str != "") console.log(`   |- ${died_str}`)
 
                 // suffle announcement
                 global.game_list[room_name]['announcement'].sort((a,b) => 0.5 - Math.random());
@@ -330,7 +333,8 @@ module.exports = {
                         end_time : Date.now() + timer * 1000,
                     } 
                     global.game_list[room_name]['timer'] = timer 
-                    
+                    // date is ready handover tag => false
+                    global.game_list[room_name]['is_handover'] = false
                 }
                 // end game
                 else{
@@ -451,7 +455,8 @@ module.exports = {
 
         // server stage and client stage not match
         // or player is died
-        if(global.game_list[room_name]['stage'] != stage || global.game_list[room_name]['player']['user_state'] == 'died')
+        // or server is in handover 
+        if(global.game_list[room_name]['stage'] != stage || global.game_list[room_name]['player']['user_state'] == 'died' || global.game_list[room_name]['is_handover'])
             return false
 
 

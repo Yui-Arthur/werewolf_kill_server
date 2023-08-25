@@ -198,6 +198,7 @@ router.route('/api/reset/')
                         "user_color" : Array.from({length: j}, (_, i) => color[i]),
                         "room_state" : "ready",
                         "game_setting": config.default_setting[7],
+                        "last_used" : Date.now()
                     }
             }
 
