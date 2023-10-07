@@ -3,7 +3,9 @@ import requests
 import threading
 import logging
 import openai
-import sys      
+import sys   
+from pathlib import Path   
+import time
 
 class agent():
     def __init__(self , openai_token = None , pyChatGPT_token = None , 
@@ -26,7 +28,7 @@ class agent():
         
         self.__logging_setting__()
         self.__join_room__()
-        self.__check_room_state__()
+        
 
     def chat(self , prompt):
         print(self.chat_func(prompt))
@@ -34,6 +36,7 @@ class agent():
 
     def __openai_init__(self , openai_token):
         """openai api setting , can override this"""
+        with open(openai_token,'r') as f : openai_token = f.readline()
         openai.api_type = "azure"
         openai.api_base = "https://werewolf-kill-agent.openai.azure.com/"
         openai.api_version = "2023-07-01-preview"
@@ -58,9 +61,21 @@ class agent():
         
         return response['choices'][0]['message']['content']
     
-    def __process_data__(self , data):
+    def __proccess_data__(self , data):
         """the data proccess , must override this."""
         print(data)
+        if(len(data['information']) == 0):
+            return
+        
+        # time.sleep(2)
+        op_data = {
+            "stage_name" : data['stage'],
+            "operation" : data['information'][0]["operation"],
+            "target" : -1,
+            "chat" : "123"
+        }
+        self.__send_operation__(op_data)
+
         pass
 
     def __logging_setting__(self):
@@ -81,20 +96,22 @@ class agent():
         logging.getLogger("requests").propagate = False
 
     def __join_room__(self):
-
+        """join the game room & set the user_token"""
         try :
             r = requests.get(f'{self.server_url}/api/join_room/{self.room}/{self.name}/{self.color}' , timeout=5)
             if r.status_code == 200:
                 self.user_token = r.json()["user_token"]
                 self.logger.debug("Join Room Success")
                 self.logger.debug(f"User Token : {self.user_token}")
+                self.__check_room_state__()
             else:
                 self.logger.warning(f"Join Room Error : {r.json()}")
         
-        except :
-            self.logger.warning("Server Error")
+        except Exception as e :
+            self.logger.warning(f"__join_room__ Server Error , {e}")
 
     def quit_room(self):
+        """quit the game room"""
         r = requests.get(f'{self.server_url}/api/quit_room/{self.room}/{self.name}' , headers ={
             "Authorization" : "Bearer {self.user_token}"
         })
@@ -103,6 +120,7 @@ class agent():
             self.logger.warning(f"Quit Room Error : {r.json()}")
 
     def __check_room_state__(self):
+        """check the game room state every 5s until the room_state is started"""
         try:
             r = requests.get(f'{self.server_url}/api/room/{self.room}' , timeout=3)
 
@@ -112,10 +130,11 @@ class agent():
                 self.__check_game_state__()
             else:
                 threading.Timer(5.0, self.__check_room_state__).start()
-        except:
-            self.logger.warning("Server Error")
+        except Exception as e:
+            self.logger.warning(f"__check_room_state__ Server Error , {e}")
 
     def __check_game_state__(self):
+        """check the game state every 1s until game over , if the game state is chaged , call the proccess data func"""
         try:
             r = requests.get(f'{self.server_url}/api/game/{self.room}/information/{self.name}' ,  headers ={
             "Authorization" : "Bearer {self.user_token}"
@@ -125,15 +144,16 @@ class agent():
                 if self.current_info != r.json():
                     self.current_info = r.json()
                     self.logger.debug(r.json())
-                    self.__process_data__(self.current_info) 
+                    self.__proccess_data__(self.current_info) 
             else:
                 self.logger.warning(r.json())
 
             threading.Timer(1.0, self.__check_game_state__).start()
-        except:
-            self.logger.warning("Server Error")
+        except Exception as e:
+            self.logger.warning(f"__check_game_state__ Server Error , {e}")
 
     def __get_role__(self):
+        """get the agent's role after the game is started"""
         try:
             r = requests.get(f'{self.server_url}/api/game/{self.room}/role/{self.name}' , headers ={
                 "Authorization" : "Bearer {self.user_token}"
@@ -144,18 +164,26 @@ class agent():
                 self.logger.debug(f"Agent Role: {self.role}")
             else:
                 self.logger.warning(f"Get role Error : {r.json()}")
-        except:
-            self.logger.warning("Server Error")
+        except Exception as e:
+            self.logger.warning(f"__get_role__ Server Error , {e}")
+
+    def __send_operation__(self , data):
+        """send operation to server"""
+        try:
+            r = requests.post(f'{self.server_url}/api/game/{self.room}/operation/{self.name}' , headers ={
+                "Authorization" : "Bearer {self.user_token}"
+            } , data= data, timeout=5)
+
+            self.logger.debug(f"Agent send operation : {data}")
+            if r.status_code == 200:
+                self.logger.debug(f"Send Status : OK")
+            else:
+                self.logger.warning(f"Send error : {r.json()}")
+        except Exception as e:
+            self.logger.warning(f"__send_operation__ Server Error , {e}")
 
     
-    
-
-class yui_agent(agent):
-    def __init__(self, openai_token=None, pyChatGPT_token=None):
-        super().__init__(openai_token, pyChatGPT_token)
-    
-    
-
 if __name__ == "__main__":
-    a = agent(server_url = "http://localhost:8001" , openai_token="")
-    # a.chat("""""")
+    a = agent(server_url = "http://localhost:8001" , openai_token=Path("secret/openai.key"))
+    
+    # a.chat("""hello""")
