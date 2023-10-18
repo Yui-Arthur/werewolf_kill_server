@@ -10,21 +10,7 @@ var app = express();
 
 
 
-global.room_list = {
-    "TESTROOM": {
-        "room_name": "TESTROOM",
-        "room_leader": "yui",
-        "room_user": [
-            "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" , "c"
-        ],
-        "user_color" : [
-            "#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" , "#93c5fd"
-        ],
-        "room_state" : "ready",
-        "game_setting": config.default_setting[7],
-        "last_used" : Date.now()
-    }
-};
+global.room_list = {};
 global.game_list = {} 
 global.game_timer = {}
 global.grpc_server_check = {
