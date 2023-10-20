@@ -2,6 +2,7 @@ var grpc = require('@grpc/grpc-js');
 var agent = require('./proto')["agent"]
 var jwt_op = require('./jwt')
 var config = require('../conf')
+var room = require('./room')
 
 module.exports = {
 
@@ -18,6 +19,10 @@ module.exports = {
         
 
         token = token.replace('Bearer ', '')
+
+        if(!await room.check_room(room_name))
+            return route_back({status: false,  log:"room not found" })
+
         if(!await jwt_op.verify_room_jwt(token , room_name , true , user_name))
             return route_back({status: false,  log:"jwt error"})
 
