@@ -2,7 +2,7 @@ var config = require('../conf')
 var jwt_op = require('./jwt')
 var room = require('./room')
 var grpc = require('@grpc/grpc-js');
-var werewolf_kill = require('./proto')
+var werewolf_kill = require('./proto')["werewolf"]
 var fs = require('fs');
 
 
@@ -17,7 +17,7 @@ module.exports = {
     },
 
     check_grpc_server : async function(){
-        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
         client.checkRoleList({role : [0,0,0,0,0], room_name : "1234"}, function (err, response) {
             if(err){
                 global.grpc_server_check['status'] = 0
@@ -38,7 +38,7 @@ module.exports = {
             return
 
 
-        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
         client.voteInfo({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result){
 
             global.game_list[room_name]['vote_info'] = {}
@@ -175,7 +175,7 @@ module.exports = {
         }
         
         // grpc next_stage func
-        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
         client.nextStage({room_name: room_name , room_stage : global.game_list[room_name]['stage']} , function(err, result) {
             
             if(err){
@@ -510,7 +510,7 @@ module.exports = {
             return  route_back({status : false , log : "operation error"})
         }
         
-        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
         // grpc proto
         user_operation = {
             user : user_id,

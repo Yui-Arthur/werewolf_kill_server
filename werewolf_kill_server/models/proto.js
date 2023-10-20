@@ -1,7 +1,16 @@
-var PROTO_PATH = "./protobufs/werewolf_kill.proto"
+var WEREWOLF_PROTO_PATH = "./protobufs/werewolf_kill.proto"
+var AGENT_PROTO_PATH = "./protobufs/agent.proto"
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
+const werewolfPackageDefinition = protoLoader.loadSync(WEREWOLF_PROTO_PATH, {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true,
+   
+});
+const agentPackageDefinition = protoLoader.loadSync(AGENT_PROTO_PATH, {
     keepCase: true,
     longs: String,
     enums: String,
@@ -10,9 +19,13 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
    
 });
 
-var werewolf_proto = grpc.loadPackageDefinition(packageDefinition).werewolf_kill;
+var werewolf_proto = grpc.loadPackageDefinition(werewolfPackageDefinition).werewolf_kill;
+var agent_proto = grpc.loadPackageDefinition(agentPackageDefinition).agent;
 
-module.exports = werewolf_proto
+module.exports = {
+    "werewolf" : werewolf_proto,
+    "agent" : agent_proto  
+} 
 
 // async function stage(room_name){
 //     const client = new werewolf_proto('localhost:50051', grpc.credentials.createInsecure());

@@ -78,7 +78,8 @@ module.exports = {
 
     },
     announcementWaitTime : 5,
-    grpc_server_ip : process.env.grpc_server_ip || "localhost:50051" ,
+    werewolf_server_ip : process.env.werewolf_server_ip || "localhost:50051" ,
+    agent_server_ip : process.env.agent_server_ip || "localhost:50052" ,
     jwt_open :  process.env.jwt_open || 0,
     werewolf_realtime_vote_info : process.env.werewolf_realtime_vote_info != undefined ? process.env.werewolf_realtime_vote_info : 1
 }

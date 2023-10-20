@@ -2,7 +2,7 @@ var config = require('../conf')
 var jwt_op = require('./jwt')
 var game = require('./game')
 var grpc = require('@grpc/grpc-js');
-var werewolf_kill = require('./proto')
+var werewolf_kill = require('./proto')['werewolf']
 var randomstring = require("randomstring");
 var fs = require('fs');
 
@@ -167,7 +167,7 @@ module.exports = {
         if(sum != game_setting['player_num'])
             return route_back({status: false , log: "player num and role num not equal"})
 
-        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
         client.checkRoleList({role : role_list, room_name : room_name}, function (err, response) {
             // console.log(response)
             if(err){
@@ -228,7 +228,7 @@ module.exports = {
     
         /** grpc game start**/
         
-        const client = new werewolf_kill(config.grpc_server_ip, grpc.credentials.createInsecure());
+        const client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
         client.startGame({role : role_list, room_name : room_name}, function (err, response){
 
             if(err)
