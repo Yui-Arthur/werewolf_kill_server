@@ -12,15 +12,29 @@ services:
         context: ./werewolf_kill_server
         dockerfile: dockerfile
       environment:
-        grpc_server_ip : "grpc_server:50051"
+        werewolf_server_ip : "werewolf_server:50051"
+        agent_server_ip : "agent_server:50052"
         jwt_open : 1
         TZ : Asia/Taipei
-    grpc_server:
-      image: grpc_server
-      container_name: grpc_server
+    werewolf_server:
+      image: werewolf_server
+      container_name: werewolf_server
       build:
         context: ./werewolf_kill
         dockerfile: Dockerfile
+    agent_server:
+      image: agent_server
+      container_name: agent_server
+      build:
+        context: ./generative_agent_with_werewolf_kill
+        dockerfile: dockerfile
+      deploy:
+        resources:
+          reservations:
+            devices:
+              - driver: nvidia
+                count: 1
+                capabilities: [gpu]
     front:
       image: nginx
       container_name: werewolf_kill
