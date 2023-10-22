@@ -40,6 +40,25 @@ router.route('/api/game/:room_name/role/:user_name')
 
     })
 
+router.route('/api/game/:room_name/information/')
+    .get(async function (req, res){
+
+        try{     
+            result =  await game.get_all_information(req.params.room_name, req.header('Authorization'))
+            if(result.status)
+                res.status(200).json(result.player_info)
+            else
+                res.status(500).json({
+                    Error : result.log
+                })
+        } catch(e){
+            console.log(e);
+            res.sendStatus(500)
+        }
+        
+
+})
+
 router.route('/api/game/:room_name/information/:user_name')
     .get(async function (req, res){
 

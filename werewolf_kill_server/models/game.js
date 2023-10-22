@@ -378,6 +378,48 @@ module.exports = {
         return {status: true, game_info : {...global.game_list[room_name]['player'][index] , teamate:teamate} , player_id : index , log:"ok"}
     },
 
+    get_all_information : async function(room_name , token){
+        token = token.replace('Bearer ', '')
+        if(!await this.check_game_room(room_name))
+        return{status: false,  log:"room not found or game is not started"}  
+        
+        if(!await jwt_op.verify_room_jwt(token , room_name , false , "X") && !await jwt_op.verify_room_jwt(token , room_name , true, "X"))
+        return{status: false,  log:"jwt error"}
+        
+        var vote_info = {}
+        var empty = 0
+        // empty 0 = no vote , 
+        // empty 1 = wolf vote (realtime and last stage)
+        // empty 2 = day vote (last stage)
+        // empty = 1 wolf vote => only werewolf can get vote info
+        if(global.game_list[room_name]['empty'] == 1){
+            
+            // werewolf stage => realtime 
+            if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
+                vote_info = global.game_list[room_name]['vote_info'] , empty = 1
+            // last stage werewolf vote info (last stage send to front empty = 2)
+            else
+                vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+        }
+        // empty = 2 all player can get vote info
+        else if(global.game_list[room_name]['empty'] == 2)
+            vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+
+
+        var info = {
+            stage : global.game_list[room_name]['stage'],
+            stage_description : global.game_list[room_name]['stage_description'],
+            announcement : global.game_list[room_name]["announcement"],
+            information : global.game_list[room_name]["information"],
+            timer : global.game_list[room_name]['timer'],            
+            vote_info : vote_info,
+            empty : empty,
+        }
+        
+        return {status: true, player_info : info , log:"ok"}
+        
+    },
+
     get_information : async function(room_name, user_name , token){
         token = token.replace('Bearer ', '')
 
