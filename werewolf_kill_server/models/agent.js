@@ -11,9 +11,7 @@ module.exports = {
 
         agent_type = agent_setting['agent_type']
         agent_name = agent_setting['agent_name']
-        key_path = agent_setting['key_path']
-        api_base = agent_setting['api_base']
-        engine = agent_setting['engine']
+        api_json = agent_setting['api_json']
         color = agent_setting['color']
         prompt_dir = agent_setting['prompt_dir']
         
@@ -26,8 +24,8 @@ module.exports = {
         if(!await jwt_op.verify_room_jwt(token , room_name , true , user_name))
             return route_back({status: false,  log:"jwt error"})
 
-        client.create_agent({roomName : room_name, agentType : agent_type, agentName : agent_name, apiBase : api_base , engine : engine ,
-                             keyPath : key_path , color: color,promptDir: prompt_dir} , function(err, response){
+        client.create_agent({roomName : room_name, agentType : agent_type, agentName : agent_name, apiJson : api_json,
+                            color: color,promptDir: prompt_dir} , function(err, response){
             
             if(err){
                 console.log(`[${new Date(Date.now())}] - create agent failed , ${err.message}`) 
