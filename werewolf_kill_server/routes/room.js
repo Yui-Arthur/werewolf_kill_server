@@ -192,6 +192,7 @@ router.route('/api/reset/')
             // clear timer
             for(const [room_name, timer] of Object.entries(global.game_timer)){
                 clearInterval(timer["timer"])
+                clearInterval(timer["agent_info_timer"])
                 delete global.game_timer[room_name]
             }
             
@@ -205,6 +206,7 @@ router.route('/api/reset/')
                 "user_color" : [
                     "#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" //, "#93c5fd"
                 ],
+                "agent" : [],
                 "room_state" : "ready",
                 "game_setting": config.default_setting[7],
                 "last_used" : Date.now()
@@ -217,6 +219,7 @@ router.route('/api/reset/')
                         "room_leader": "Player_1",
                         "room_user": Array.from({length: j}, (_, i) => `Player_${i + 1}`),
                         "user_color" : Array.from({length: j}, (_, i) => color[i]),
+                        "agent" : [],
                         "room_state" : "ready",
                         "game_setting": config.default_setting[7],
                         "last_used" : Date.now()

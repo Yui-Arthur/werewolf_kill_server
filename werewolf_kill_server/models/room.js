@@ -1,6 +1,7 @@
 var config = require('../conf')
 var jwt_op = require('./jwt')
 var game = require('./game')
+var agent = require('./agent')
 var grpc = require('@grpc/grpc-js');
 var werewolf_kill = require('./proto')['werewolf']
 var randomstring = require("randomstring");
@@ -49,6 +50,7 @@ module.exports = {
             "room_leader" : user_name,
             "room_user" : [user_name],
             "user_color" : [`#${user_color}`],
+            "agent" : [],
             "room_state" : "ready",
             "game_setting" : config.default_setting[7],
             "last_used" : Date.now()
@@ -249,6 +251,8 @@ module.exports = {
                 'timer' : config.announcementWaitTime,
                 'vote_info' : {},
                 'prev_vote' : {},
+                'agent' : global.room_list[room_name]['agent'],
+                'agent_info' : {},
                 'empty' : 0,
                 'player_num' : global.room_list[room_name]['game_setting']['player_num'],
                 'operation_time' : global.room_list[room_name]['game_setting']['operation_time'],
@@ -263,6 +267,7 @@ module.exports = {
             // set init timer
             global.game_timer[room_name] = {
                 timer : setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over),
+                agent_info_timer : setInterval(agent.update_agent_info , 10 * 1000 , room_name),
                 end_time : Date.now() + config.announcementWaitTime  * 1000
             }
             

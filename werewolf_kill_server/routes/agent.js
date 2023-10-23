@@ -38,4 +38,23 @@ router.route('/api/agent/:room_name/:user_name/:agent_id')
         }
     })
 
+// router.route('/api/agent/:room_name/:agent_id/info')
+//     .delete(async function (req, res){
+//         try{
+//             result =  await agent.get_agent_info(req.params.room_name, req.params.agent_id , function (result){
+//                 if(result.status)
+//                 res.sendStatus(200)
+//                 else
+//                     res.status(500).json({
+//                         Error : result.log
+//                     })
+//             })
+                
+//         } catch(e){
+//             console.log(e);
+//             res.sendStatus(500)
+//         }
+//     })
+
+
 module.exports = router;

@@ -109,6 +109,7 @@ module.exports = {
 
     game_over : async function(room_name){
         // game over del all game info
+        clearInterval(global.game_timer[room_name]['agent_info_timer'])
         delete global.game_list[room_name]
         delete global.game_timer[room_name]
         // reset the room state
@@ -129,6 +130,7 @@ module.exports = {
         if(!global.game_list.hasOwnProperty(room_name))
             return
 
+        
         // set handover tag => true
         global.game_list[room_name]['is_handover'] = true
         
@@ -330,6 +332,7 @@ module.exports = {
                     timer = timer + wait_time
                     global.game_timer[room_name] = {
                         timer : setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func) ,
+                        agent_info_timer : global.game_timer[room_name]['agent_info_timer'],
                         end_time : Date.now() + timer * 1000,
                     } 
                     global.game_list[room_name]['timer'] = timer 
@@ -411,6 +414,7 @@ module.exports = {
             stage_description : global.game_list[room_name]['stage_description'],
             announcement : global.game_list[room_name]["announcement"],
             information : global.game_list[room_name]["information"],
+            agent_info : global.game_list[room_name]['agent_info'],
             timer : global.game_list[room_name]['timer'],            
             vote_info : vote_info,
             empty : empty,
@@ -485,6 +489,7 @@ module.exports = {
             stage_description : global.game_list[room_name]['stage_description'],
             announcement : announcement,
             information : information,
+            agent_info : global.game_list[room_name]['agent_info'],
             timer : global.game_list[room_name]['timer'],            
             vote_info : vote_info,
             empty : empty,
