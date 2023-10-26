@@ -31,7 +31,7 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(room);
 app.use(game);
 app.use(agent);
-app.use(express.static('view'))
+app.use(express.static('views'))
 
 
 app.listen(8001 , function(req , res ){

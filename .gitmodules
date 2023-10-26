@@ -4,3 +4,6 @@
 [submodule "werewolf_kill"]
 	path = werewolf_kill
 	url = https://github.com/yeeecheng/werewolf_kill.git
+[submodule "werewolf_kill_server/views"]
+	path = werewolf_kill_server/views
+	url = https://github.com/Sunny1928/wolf.git
