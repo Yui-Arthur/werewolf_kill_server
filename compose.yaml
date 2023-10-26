@@ -8,7 +8,7 @@ services:
       #   - "80:8001"
       volumes:
         # - /home/a10955psys/werewolf_kill_server/logs:/usr/src/app/game_logs
-        - ./api_server_logs:/usr/src/app/game_logs
+        - ./logs/api_server_logs:/usr/src/app/game_logs
       build:
         context: ./werewolf_kill_server
         dockerfile: dockerfile
@@ -35,7 +35,7 @@ services:
         # - /home/a10955psys/werewolf_kill_server/generative_agent_with_werewolf_kill/logs:/usr/src/app/agent/logs
         # - /home/a10955psys/werewolf_kill_server/generative_agent_with_werewolf_kill/doc/secret/:/usr/src/app/agent/doc/secret
         # - /home/a10955psys/werewolf_kill_server/generative_agent_with_werewolf_kill/utils:/usr/src/app/agent/utils
-        - ./agent_logs:/usr/src/app/agent/logs
+        - ./logs/agent_logs:/usr/src/app/agent/logs
         - ./secret/:/usr/src/app/agent/doc/secret
       deploy:
         resources:
@@ -50,7 +50,7 @@ services:
       volumes:
         - ./werewolf_kill_server/views/nginx.conf:/etc/nginx/conf.d/default.conf
         - ./werewolf_kill_server/views/:/usr/share/nginx/html
-        - ./nginx_logs:/var/log/nginx/
+        - ./logs/nginx_logs:/var/log/nginx/
       ports:
         - "80:80"
       logging:
