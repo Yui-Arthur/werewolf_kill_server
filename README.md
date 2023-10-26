@@ -1,5 +1,11 @@
-## clone the whole project incude [api server](in this repo [werewolf_kill_server](werewolf_kill_server)) , [frontend](https://github.com/Sunny1928/wolf.git) , [werewolf game server](https://github.com/yeeecheng/werewolf_kill.git) , [agent server](https://github.com/Yui-Arthur/generative_agent_with_werewolf_kill.git)
-```git --recurse-submodules clone https://github.com/Yui-Arthur/werewolf_kill_server.git```
+## Clone the whole project , including the following repo
+### 1. api server(in this repo [werewolf_kill_server](werewolf_kill_server)) 
+### 2. [Wolf frontend](https://github.com/Sunny1928/wolf.git)
+### 3. [Werewolf game grpc server](https://github.com/yeeecheng/werewolf_kill.git)
+### 4. [Agent grpc server](https://github.com/Yui-Arthur/generative_agent_with_werewolf_kill.git)
+```
+git --recurse-submodules clone https://github.com/Yui-Arthur/werewolf_kill_server.git
+```
 
 ## run the project
 ### use docker-compose
