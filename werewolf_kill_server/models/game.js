@@ -3,6 +3,7 @@ var jwt_op = require('./jwt')
 var room = require('./room')
 var grpc = require('@grpc/grpc-js');
 var werewolf_kill = require('./proto')["werewolf"]
+var agent = require('./proto')["agent"]
 var fs = require('fs');
 
 
@@ -17,15 +18,27 @@ module.exports = {
     },
 
     check_grpc_server : async function(){
-        const client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
+        var client = new werewolf_kill(config.werewolf_server_ip, grpc.credentials.createInsecure());
         client.checkRoleList({role : [0,0,0,0,0], room_name : "1234"}, function (err, response) {
             if(err){
-                global.grpc_server_check['status'] = 0
-                console.log(`[${new Date(Date.now())}] - grpc server is not available`) 
+                global.grpc_server_check['status']['werewolf'] = 0
+                console.log(`[${new Date(Date.now())}] - werewolf server is not available`) 
             }
             else{
-                global.grpc_server_check['status'] = 1
-                console.log(`[${new Date(Date.now())}] - grpc server is running`) 
+                global.grpc_server_check['status']['werewolf'] = 1
+                console.log(`[${new Date(Date.now())}] - werewolf server is running`) 
+            }
+        })
+
+        var client = new agent(config.agent_server_ip, grpc.credentials.createInsecure());
+        client.get_agent_info({agentID : -1}, function (err, response) {
+            if(err){
+                global.grpc_server_check['status']['agent'] = 0
+                console.log(`[${new Date(Date.now())}] - agent server is not available`) 
+            }
+            else{
+                global.grpc_server_check['status']['agent'] = 1
+                console.log(`[${new Date(Date.now())}] - agent server is running`) 
             }
         })
 
@@ -70,8 +83,8 @@ module.exports = {
         if(!await this.check_game_room(room_name))
             return{status: false,  log:"room not found or game is not started"}  
 
-        if(! global.grpc_server_check['status'])
-            return{status: false,  log:"grpc server is not available"}      
+        if(! global.grpc_server_check['status']['werewolf'])
+            return{status: false,  log:"werewolf server is not available"}      
 
         if(!await jwt_op.verify_room_jwt(token , room_name , false , user_name) && !await jwt_op.verify_room_jwt(token , room_name , true, user_name))
             return{status: false,  log:"jwt error"}
@@ -163,15 +176,15 @@ module.exports = {
                 global.game_list[room_name]['died'][user] = cnt-1
         }
         
-        // check grpc server
+        // check werewolf server
         var retries = 20
-        while(! global.grpc_server_check['status']){
+        while(! global.grpc_server_check['status']['werewolf']){
             retries --
             await sleep(1000)
-            console.log("grpc server is not available , retrying")
+            console.log("werewolf server is not available , retrying")
 
             if(retries == 0){
-                console.log("grpc server is error , end game")
+                console.log("werewolf server is error , end game")
                 game_over_func(room_name)
             }
         }
@@ -537,8 +550,8 @@ module.exports = {
         if(!await this.check_game_room(room_name))
             return route_back({status: false,  log:"room not found or game is not started"}) 
 
-        if(! global.grpc_server_check['status'])
-            return{status: false,  log:"grpc server is not available"}      
+        if(! global.grpc_server_check['status']['werewolf'])
+            return{status: false,  log:"werewolf server is not available"}      
 
         if(!await jwt_op.verify_room_jwt(token , room_name , false , user_name) && !await jwt_op.verify_room_jwt(token , room_name , true, user_name))
             return route_back({status: false,  log:"jwt error"})

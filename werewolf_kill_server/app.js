@@ -16,7 +16,10 @@ global.game_list = {}
 global.game_timer = {}
 global.grpc_server_check = {
     "timer" : setInterval(game_model.check_grpc_server , 60 * 1000),
-    "status" : false
+    "status" : {
+        "werewolf" : false,
+        "agent" : false
+    }
 }
 
 // every 10 minutes check idel room

@@ -26,6 +26,9 @@ module.exports = {
 
         if(!await jwt_op.verify_room_jwt(token , room_name , true , user_name))
             return route_back({status: false,  log:"jwt error"})
+        
+        if(! global.grpc_server_check['status']['agent'])
+            return route_back({status: false,  log:"agent server is not available"})
 
         client.create_agent({roomName : room_name, agentType : agent_type, agentName : agent_name, apiJson : api_json,
                             color: color,promptDir: prompt_dir} , function(err, response){
@@ -49,7 +52,10 @@ module.exports = {
         if(!await jwt_op.verify_room_jwt(token , room_name , true , user_name))
             return route_back({status: false,  log:"jwt error"})
 
-            client.delete_agent({agentID : agent_id} , function(err, response){
+        if(! global.grpc_server_check['status']['agent'])
+            return route_back({status: false,  log:"agent server is not available"})
+
+        client.delete_agent({agentID : agent_id} , function(err, response){
 
             if(err){
                 console.log(`[${new Date(Date.now())}] - delete agent ${agent_id} failed , ${err.message}`) 
@@ -66,6 +72,8 @@ module.exports = {
 
     update_agent_info : async function(room_name){
         const client = new agent(config.agent_server_ip, grpc.credentials.createInsecure());
+        if(! global.grpc_server_check['status']['agent'])
+            return 
 
         for(const agent_id of global.game_list[room_name]['agent']){
 

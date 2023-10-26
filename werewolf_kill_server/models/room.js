@@ -208,7 +208,7 @@ module.exports = {
         // set check grpc server
         game.check_grpc_server()
         var retries = 20
-        while(! global.grpc_server_check['status']){
+        while(! global.grpc_server_check['werewolf']['status']){
             retries --
             await sleep(500)
             console.log(`${room_name} : grpc server is not available , retrying ... ${retries}`)
