@@ -18,6 +18,19 @@ docker-compose up --build
 4. the all logs will save in ```./logs``` 
 
 ### run the server respective
+1. api server 
+```bash
+cd werewolf_kill_server 
+node app.js # localhost:8001
 ```
-
+2. werewolf game grpc server
+```bash
+cd werewolf_kill
+python server.py # localhost:50051
 ```
+3. agent grpc server
+```bash
+cd generative_agent_with_werewolf_kill
+python server.py # localhost:50051
+```
+4. open http://localhost:8001
