@@ -2,3 +2,4 @@ werewolf_kill_server/node_modules/
 werewolf_kill/
 werewolf_kill_server/game_logs/*.log
 generative_agent_with_werewolf_kill/
+test.js

@@ -1,0 +1,6 @@
+[submodule "generative_agent_with_werewolf_kill"]
+	path = generative_agent_with_werewolf_kill
+	url = https://github.com/Yui-Arthur/generative_agent_with_werewolf_kill.git
+[submodule "werewolf_kill"]
+	path = werewolf_kill
+	url = https://github.com/yeeecheng/werewolf_kill.git
