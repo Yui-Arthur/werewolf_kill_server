@@ -7,10 +7,10 @@
 git --recurse-submodules clone https://github.com/Yui-Arthur/werewolf_kill_server.git
 ```
 
-## Pull the latest version of all repo
+<!-- ## Pull the latest version of all repo
 ```bash
 git pull --recurse-submodules
-```
+``` -->
 
 ## run the project
 ### use docker-compose
