@@ -3,8 +3,13 @@
 ### 2. [Wolf frontend](https://github.com/Sunny1928/wolf.git)
 ### 3. [Werewolf game grpc server](https://github.com/yeeecheng/werewolf_kill.git)
 ### 4. [Agent grpc server](https://github.com/Yui-Arthur/generative_agent_with_werewolf_kill.git)
-```
+```bash
 git --recurse-submodules clone https://github.com/Yui-Arthur/werewolf_kill_server.git
+```
+
+## Pull the latest version of all repo
+```bash
+git pull --recurse-submodules
 ```
 
 ## run the project
