@@ -91,7 +91,7 @@ module.exports = {
         if(!await this.check_room(room_name))
             return {status: false , log: "room not found"}
         // leader quit room
-        if(await jwt_op.verify_room_jwt(token , room_name , true , user_name)){
+        if(await jwt_op.verify_room_jwt(token , room_name , true , user_name) && config.jwt_open == 1){
             delete global.room_list[room_name]
             return {status: true,  log:"ok"}
         }   
