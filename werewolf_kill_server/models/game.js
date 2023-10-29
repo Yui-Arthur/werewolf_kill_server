@@ -404,6 +404,22 @@ module.exports = {
         
         var vote_info = {}
         var empty = 0
+
+        information = Array.from(global.game_list[room_name]["information"])
+
+        // remove the dead player id from all info
+        for(const [idx , info] of Array.from(information).entries()){
+            users = info['user']
+            
+            for(const [idx , user] of users.entries()){
+                if(global.game_list[room_name]['player'][user]['user_state'] == "died")
+                    information[idx]['user'].splice(info['user'].indexOf(user),1)
+            }
+
+            if(information[idx]['user'].length == 0)
+                information.splice(idx,1)
+        }
+
         // empty 0 = no vote , 
         // empty 1 = wolf vote (realtime and last stage)
         // empty 2 = day vote (last stage)
@@ -426,7 +442,7 @@ module.exports = {
             stage : global.game_list[room_name]['stage'],
             stage_description : global.game_list[room_name]['stage_description'],
             announcement : global.game_list[room_name]["announcement"],
-            information : global.game_list[room_name]["information"],
+            information : information,
             agent_info : global.game_list[room_name]['agent_info'],
             timer : global.game_list[room_name]['timer'],            
             vote_info : vote_info,
