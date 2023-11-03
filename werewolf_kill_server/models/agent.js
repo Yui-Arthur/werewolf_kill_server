@@ -5,6 +5,24 @@ var config = require('../conf')
 
 module.exports = {
 
+    build_key_words: async function(){        
+        var mapping_dict = {
+            "good" : ["好人"],
+            "god" : ["神","神職","神明"],
+            "seer" : ["預言家"],
+            "witch" :["女巫"],
+            "hunter" : ["獵人"],
+            "village" : ["民" , "村民"],
+            "werewolf" : ["狼","狼人","壞人"],
+        }
+
+        for(const [label , key_words] of Object.entries(mapping_dict)){
+            for(const key_word of key_words)
+                global.mapping_keywords[key_word] = label
+        }
+        
+    },
+
     agent_check_room : async function(room_name) {
         return global.room_list.hasOwnProperty(room_name) && global.room_list[room_name]['room_state'] != "started" && !(global.room_list[room_name]['room_user'].length == global.room_list[room_name]['game_setting']['player_num'])
     },
@@ -69,7 +87,64 @@ module.exports = {
         });
     },
 
-    update_agent_info : async function(room_name){
+
+    process_agent_info : function(room_name , agent_name , response){
+        var partially_correct_check = {
+            "good" : ["seer" , "witch" , "village" , "hunter"],
+            "god" : ["seer" , "witch" , "hunter"]
+        }
+
+        var acc_cnt = 0
+        var ret_guess_roles = {}
+        response['guess_roles']['info'] = ["好人" , "好人" , "好人" ,"好人" , "好人" , "好人" ,"好人"]
+        if(! response.hasOwnProperty("confidence"))
+            response['confidence'] = Array(parseInt(global.game_list[room_name]['player_num'])).fill(-1);
+
+        for(const [player_id , guess_role] of response['guess_roles']['info'].entries()){
+            console.log(global.mapping_keywords[guess_role] , global.game_list[room_name]['player'][player_id]['user_role'])
+            
+            agent_guess = global.mapping_keywords[guess_role] 
+            actual_role = global.game_list[room_name]['player'][player_id]['user_role']
+
+            // info guess roles format
+            ret_guess_roles[player_id] = [guess_role , config.role_en2ch[actual_role] , parseInt(response['confidence'])]
+
+            // can't find key_word or current player is agent
+            if(! global.mapping_keywords.hasOwnProperty(guess_role) || global.room_list[room_name]['room_user'].indexOf(agent_name) == player_id)
+                continue
+            // All correct
+            else if(agent_guess == actual_role)
+                acc_cnt+=1
+            // partially correct
+            else if(partially_correct_check.hasOwnProperty(agent_guess) && partially_correct_check[agent_guess].includes(actual_role))
+                acc_cnt+=0.5
+
+        }
+
+        var acc = parseFloat((acc_cnt / (parseInt(global.game_list[room_name]['player_num'])-1) * 100).toFixed(2))
+        var token_used = parseInt(response['token_used']['info'])
+
+        delete response['token_used']
+        delete response['guess_roles']
+        delete response['confidence']
+
+        for(const [key , value] of Object.entries(response))
+            response[key] = value["info"][0]
+        
+        var agent_info_format = {
+            "detail" : {
+                "token" : token_used,
+                "role_accuracy" : acc
+            },
+            "guess_roles" : ret_guess_roles,
+            ...response
+        }
+
+        console.log(agent_info_format)
+        global.game_list[room_name]['agent_info'][agent_name] = agent_info_format
+    },
+
+    update_agent_info : async function(room_name , process_agent_info){
         const client = new agent(config.agent_server_ip, grpc.credentials.createInsecure());
         if(! global.grpc_server_check['status']['agent'])
             return 
@@ -83,7 +158,7 @@ module.exports = {
                 }
                 else{
                     console.log(`[${new Date(Date.now())}] - get agent ${agent_name} info success`) 
-                    global.game_list[room_name]['agent_info'][agent_name] = response['agentInfo']
+                    process_agent_info(room_name , agent_name , response['agentInfo'])
                 }                    
             });
         }

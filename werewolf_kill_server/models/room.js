@@ -267,7 +267,7 @@ module.exports = {
             // set init timer
             global.game_timer[room_name] = {
                 timer : setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over),
-                agent_info_timer : setInterval(agent.update_agent_info , 10 * 1000 , room_name),
+                agent_info_timer : setInterval(agent.update_agent_info , 10 * 1000 , room_name , agent.process_agent_info),
                 end_time : Date.now() + config.announcementWaitTime  * 1000
             }
             

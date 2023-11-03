@@ -77,6 +77,13 @@ module.exports = {
         "hunter" : "TBD",
 
     },
+    role_en2ch : {
+        "seer" : "預言家",
+        "witch" : "女巫",
+        "village" : "村民",
+        "werewolf" : "狼人",
+        "hunter" : "獵人"
+    },
     announcementWaitTime : 5,
     werewolf_server_ip : process.env.werewolf_server_ip || "localhost:50051" ,
     agent_server_ip : process.env.agent_server_ip || "localhost:50052" ,
