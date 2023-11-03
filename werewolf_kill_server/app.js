@@ -7,6 +7,7 @@ var game = require('./routes/game');
 var agent = require('./routes/agent');
 var game_model = require('./models/game')
 var room_model = require('./models/room')
+var agent_model = require('./models/agent')
 var app = express();
 
 
@@ -21,6 +22,7 @@ global.grpc_server_check = {
         "agent" : false
     }
 }
+global.mapping_keywords = {}
 
 // every 10 minutes check idel room
 setInterval(room_model.delete_idel_room , 10 * 60 * 1000)
@@ -42,6 +44,7 @@ app.listen(8001 , function(req , res ){
     console.log(`  agent server : ${config.agent_server_ip}`)
     console.log(`  werewolf_realtime_vote_info : ${config.werewolf_realtime_vote_info}`)
     console.log("-------------------------------------")
+    agent_model.build_key_words()
     game_model.check_grpc_server()
     room_model.delete_idel_room()
 })
