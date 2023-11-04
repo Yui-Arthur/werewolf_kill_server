@@ -96,7 +96,7 @@ module.exports = {
 
         var acc_cnt = 0
         var ret_guess_roles = {}
-        response['guess_roles']['info'] = ["好人" , "好人" , "好人" ,"好人" , "好人" , "好人" ,"好人"]
+        
         if(! response.hasOwnProperty("confidence"))
             response['confidence'] = Array(parseInt(global.game_list[room_name]['player_num'])).fill(-1);
 
@@ -107,7 +107,7 @@ module.exports = {
             actual_role = global.game_list[room_name]['player'][player_id]['user_role']
 
             // info guess roles format
-            ret_guess_roles[player_id] = [guess_role , config.role_en2ch[actual_role] , parseInt(response['confidence'])]
+            ret_guess_roles[player_id] = [guess_role , config.role_en2ch[actual_role] , parseFloat(response['confidence'])]
 
             // can't find key_word or current player is agent
             if(! global.mapping_keywords.hasOwnProperty(guess_role) || global.room_list[room_name]['room_user'].indexOf(agent_name) == player_id)
