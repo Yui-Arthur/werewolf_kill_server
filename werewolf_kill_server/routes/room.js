@@ -2,6 +2,7 @@ var express = require('express');
 var room = require('../models/room');
 var router = express.Router();
 var config = require('../conf');
+const { agent } = require('../models/proto');
 
 /**
  *  get all rooms
@@ -188,45 +189,14 @@ router.route('/api/reset/')
      * */ 
     .get(async function(req,res){
         try{
-            var color = ["#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" , "#93c5fd"]
-            // clear timer
-            for(const [room_name, timer] of Object.entries(global.game_timer)){
-                clearInterval(timer["timer"])
-                clearInterval(timer["agent_info_timer"])
-                delete global.game_timer[room_name]
-            }
-            
-            global.room_list = {}
-            global.room_list["TESTROOM"] = {
-                "room_name": "TESTROOM",
-                "room_leader": "yui",
-                "room_user": [
-                    "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" //, "c"
-                ],
-                "user_color" : [
-                    "#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" //, "#93c5fd"
-                ],
-                "agent" : [],
-                "room_state" : "ready",
-                "game_setting": config.default_setting[7],
-                "last_used" : Date.now()
-            }
-
-            for(var i = 0; i <5; i++){
-                for(var j = 5; j <= 6 ; j++)
-                    global.room_list[`TESTROOM_${i}_${j}`] = {
-                        "room_name": `TESTROOM_${i}_${j}`,
-                        "room_leader": "Player_1",
-                        "room_user": Array.from({length: j}, (_, i) => `Player_${i + 1}`),
-                        "user_color" : Array.from({length: j}, (_, i) => color[i]),
-                        "agent" : [],
-                        "room_state" : "ready",
-                        "game_setting": config.default_setting[7],
-                        "last_used" : Date.now()
-                    }
-            }
-
-            res.sendStatus(200)
+            room.reset_room(function(result){
+                if(result.status)
+                    res.sendStatus(200)
+                else
+                    res.status(500).json({
+                        "Error" : result.log
+                    })
+            })
             
         } catch(e){
             console.log(e);

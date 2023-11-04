@@ -50,7 +50,7 @@ module.exports = {
             "room_leader" : user_name,
             "room_user" : [user_name],
             "user_color" : [`#${user_color}`],
-            "agent" : [],
+            "agent" : {},
             "room_state" : "ready",
             "game_setting" : config.default_setting[7],
             "last_used" : Date.now()
@@ -293,7 +293,7 @@ module.exports = {
 
     },
    
-    delete_idel_room : function(){
+    delete_idel_room : async function(){
 
         console.log(`[${new Date(Date.now())}] - checking idel room`) 
 
@@ -313,14 +313,68 @@ module.exports = {
             console.log(logs)
         }
 
+    },
+
+    build_default_rooms : async function(){
+        var color = ["#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" , "#93c5fd"]
+        global.room_list["TESTROOM"] = {
+            "room_name": "TESTROOM",
+            "room_leader": "yui",
+            "room_user": [
+                "yui" , "pinyu" , "yeeecheng" , "sunny" , "a" , "b" //, "c"
+            ],
+            "user_color" : [
+                "#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" //, "#93c5fd"
+            ],
+            "agent" : {},
+            "room_state" : "ready",
+            "game_setting": config.default_setting[7],
+            "last_used" : Date.now()
+        }
+
+        for(var i = 0; i <5; i++){
+            for(var j = 5; j <= 6 ; j++)
+                global.room_list[`TESTROOM_${i}_${j}`] = {
+                    "room_name": `TESTROOM_${i}_${j}`,
+                    "room_leader": "Player_1",
+                    "room_user": Array.from({length: j}, (_, i) => `Player_${i + 1}`),
+                    "user_color" : Array.from({length: j}, (_, i) => color[i]),
+                    "agent" : {},
+                    "room_state" : "ready",
+                    "game_setting": config.default_setting[7],
+                    "last_used" : Date.now()
+                }
+        }
+    },
+
+    reset_room : async function(route_back){
+        
+        // clear timer
+        for(const [room_name, timer] of Object.entries(global.game_timer)){
+            clearInterval(timer["timer"])
+            clearInterval(timer["agent_info_timer"])
+            delete global.game_timer[room_name]
+        }
+
+        // delete agent
+        for(const [room_name, room_info] of Object.entries(global.room_list)){
+            for(const [agent_name , agent_id] of Object.entries(room_info['agent'])){
+                
+                agent.delete_agent(room_name , "test" , config.master_token , agent_name  , (result) => {
+                    if(! result.status)
+                        route_back({status: false , log : result.log})
+                    else if(Object.keys(global.room_list[room_name]['agent']).length == 0){
+                        this.build_default_rooms()
+                        console.log(global.room_list[room_name]['agent'])
+                        route_back({status: true})
+                    }
+                })
+                
+            }
+        }
+
+
     }
 
 }
 
-// console.log(jwt_op.create_room_jwt("yui" , "TESTROOM" , true))
-// console.log(jwt_op.create_room_jwt("pinyu" , "TESTROOM" , true))
-// console.log(jwt_op.create_room_jwt("yeeecheng" , "TESTROOM" , true))
-// console.log(jwt_op.create_room_jwt("sunny" , "TESTROOM" , true))
-// console.log(jwt_op.create_room_jwt("a" , "TESTROOM" , true))
-// console.log(jwt_op.create_room_jwt("b" , "TESTROOM" , true))
-// console.log(jwt_op.create_room_jwt("c" , "TESTROOM" , true))
