@@ -317,6 +317,8 @@ module.exports = {
 
     build_default_rooms : async function(){
         var color = ["#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" , "#93c5fd"]
+        global.room_list = {}
+        global.game_list = {}
         global.room_list["TESTROOM"] = {
             "room_name": "TESTROOM",
             "room_leader": "yui",
@@ -356,6 +358,20 @@ module.exports = {
             delete global.game_timer[room_name]
         }
 
+
+
+        global.agent_cnt = 0
+        for(const [room_name, room_info] of Object.entries(global.room_list))
+        global.agent_cnt += Object.keys(global.room_list[room_name]['agent']).length
+        console.log(`[${new Date(Date.now())}] - reset room current agent number : ${global.agent_cnt}`) 
+
+        // no agent need to delete
+        if(global.agent_cnt == 0){
+            console.log(`[${new Date(Date.now())}] - reset room with no agent`) 
+            this.build_default_rooms()
+            route_back({status: true})         
+        }
+
         // delete agent
         for(const [room_name, room_info] of Object.entries(global.room_list)){
             for(const [agent_name , agent_id] of Object.entries(room_info['agent'])){
@@ -363,9 +379,12 @@ module.exports = {
                 agent.delete_agent(room_name , "test" , config.master_token , agent_name  , (result) => {
                     if(! result.status)
                         route_back({status: false , log : result.log})
-                    else if(Object.keys(global.room_list[room_name]['agent']).length == 0){
+                    else 
+                        global.agent_cnt -= 1
+
+                    if(global.agent_cnt == 0){
                         this.build_default_rooms()
-                        console.log(global.room_list[room_name]['agent'])
+                        console.log(`[${new Date(Date.now())}] - Reset Room with deleted all agent`) 
                         route_back({status: true})
                     }
                 })
