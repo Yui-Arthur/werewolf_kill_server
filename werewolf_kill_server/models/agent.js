@@ -98,27 +98,28 @@ module.exports = {
         var ret_guess_roles = {}
         
         if(! response.hasOwnProperty("confidence"))
-            response['confidence'] = Array(parseInt(global.game_list[room_name]['player_num'])).fill(-1);
-
+            response['confidence'] = {"info" : Array(parseInt(global.game_list[room_name]['player_num'])).fill("-1")};
+                    
         for(const [player_id , guess_role] of response['guess_roles']['info'].entries()){
-            console.log(global.mapping_keywords[guess_role] , global.game_list[room_name]['player'][player_id]['user_role'])
+            // console.log(global.mapping_keywords[guess_role] , global.game_list[room_name]['player'][player_id]['user_role'])
             
             agent_guess = global.mapping_keywords[guess_role] 
             actual_role = global.game_list[room_name]['player'][player_id]['user_role']
 
             // info guess roles format
-            ret_guess_roles[player_id] = [guess_role , config.role_en2ch[actual_role] , parseFloat(response['confidence'])]
+            ret_guess_roles[player_id] = [guess_role , config.role_en2ch[actual_role] , parseFloat(response['confidence']["info"][player_id])]
 
             // can't find key_word or current player is agent
             if(! global.mapping_keywords.hasOwnProperty(guess_role) || global.room_list[room_name]['room_user'].indexOf(agent_name) == player_id)
-                continue
+                ret_guess_roles[player_id].push(0)
             // All correct
             else if(agent_guess == actual_role)
-                acc_cnt+=1
+                acc_cnt+=1 , ret_guess_roles[player_id].push(1)
             // partially correct
             else if(partially_correct_check.hasOwnProperty(agent_guess) && partially_correct_check[agent_guess].includes(actual_role))
-                acc_cnt+=0.5
-
+                acc_cnt+=0.5 , ret_guess_roles[player_id].push(0.5)
+            else
+                ret_guess_roles[player_id].push(0)
         }
 
         var acc = parseFloat((acc_cnt / (parseInt(global.game_list[room_name]['player_num'])-1) * 100).toFixed(2))
@@ -140,7 +141,6 @@ module.exports = {
             ...response
         }
 
-        console.log(agent_info_format)
         global.game_list[room_name]['agent_info'][agent_name] = agent_info_format
     },
 
