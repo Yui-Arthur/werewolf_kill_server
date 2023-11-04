@@ -378,14 +378,14 @@ module.exports = {
                 
                 agent.delete_agent(room_name , "test" , config.master_token , agent_name  , (result) => {
                     if(! result.status)
-                        route_back({status: false , log : result.log})
-                    else 
-                        global.agent_cnt -= 1
+                        console.log(`[${new Date(Date.now())}] - delete ${agent_name} with error ${result.log}`) 
+                    
+                    global.agent_cnt -= 1
 
                     if(global.agent_cnt == 0){
                         this.build_default_rooms()
                         console.log(`[${new Date(Date.now())}] - Reset Room with deleted all agent`) 
-                        route_back({status: true})
+                        return route_back({status: true})
                     }
                 })
                 
