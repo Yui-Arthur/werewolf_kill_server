@@ -12,7 +12,7 @@ module.exports = {
             "seer" : ["預言家"],
             "witch" :["女巫"],
             "hunter" : ["獵人"],
-            "village" : ["民" , "村民"],
+            "village" : ["平民" , "民" , "村民"],
             "werewolf" : ["狼","狼人","壞人"],
         }
 
