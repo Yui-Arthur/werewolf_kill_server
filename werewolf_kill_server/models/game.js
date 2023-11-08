@@ -146,7 +146,8 @@ module.exports = {
         
         // set handover tag => true
         global.game_list[room_name]['is_handover'] = true
-        
+        global.game_list[room_name]['last_stage'] = JSON.parse(JSON.stringify(global.game_list[room_name]));
+
         // set timer end time to prevent skip 2 stage
         global.game_timer[room_name]['end_time'] = Date.now()
 
@@ -351,6 +352,7 @@ module.exports = {
                     global.game_list[room_name]['timer'] = timer 
                     // date is ready handover tag => false
                     global.game_list[room_name]['is_handover'] = false
+                    delete global.game_list[room_name]['last_stage']
                 }
                 // end game
                 else{
@@ -401,18 +403,23 @@ module.exports = {
         
         if(!await jwt_op.verify_room_jwt(token , room_name , false , "X") && !await jwt_op.verify_room_jwt(token , room_name , true, "X"))
         return{status: false,  log:"jwt error"}
-        
+
+        var data = global.game_list[room_name]
+
+        if(global.game_list[room_name]['is_handover'])
+            data = global.game_list[room_name]['last_stage']
+
         var vote_info = {}
         var empty = 0
 
-        information = Array.from(global.game_list[room_name]["information"])
+        information = Array.from(data["information"])
 
         // remove the dead player id from all info
         for(const [idx , info] of Array.from(information).entries()){
             users = info['user']
             
             for(const [idx , user] of users.entries()){
-                if(global.game_list[room_name]['player'][user]['user_state'] == "died")
+                if(data['player'][user]['user_state'] == "died")
                     information[idx]['user'].splice(info['user'].indexOf(user),1)
             }
 
@@ -424,27 +431,27 @@ module.exports = {
         // empty 1 = wolf vote (realtime and last stage)
         // empty 2 = day vote (last stage)
         // empty = 1 wolf vote => only werewolf can get vote info
-        if(global.game_list[room_name]['empty'] == 1){
+        if(data['empty'] == 1){
             
             // werewolf stage => realtime 
-            if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
-                vote_info = global.game_list[room_name]['vote_info'] , empty = 1
+            if(data['stage'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
+                vote_info = data['vote_info'] , empty = 1
             // last stage werewolf vote info (last stage send to front empty = 2)
             else
-                vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+                vote_info = data['prev_vote'] , empty = 2
         }
         // empty = 2 all player can get vote info
-        else if(global.game_list[room_name]['empty'] == 2)
-            vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+        else if(data['empty'] == 2)
+            vote_info = data['prev_vote'] , empty = 2
 
 
         var info = {
-            stage : global.game_list[room_name]['stage'],
-            stage_description : global.game_list[room_name]['stage_description'],
-            announcement : global.game_list[room_name]["announcement"],
+            stage : data['stage'],
+            stage_description : data['stage_description'],
+            announcement : data["announcement"],
             information : information,
-            agent_info : global.game_list[room_name]['agent_info'],
-            timer : global.game_list[room_name]['timer'],            
+            agent_info : data['agent_info'],
+            timer : data['timer'],            
             vote_info : vote_info,
             empty : empty,
         }
@@ -467,25 +474,31 @@ module.exports = {
         if(user_id <= -1)
             return {status: false , log: "user name error"}
 
+        var data = global.game_list[room_name]
+
+        if(global.game_list[room_name]['is_handover'])
+            data = global.game_list[room_name]['last_stage']
+        
+
         var information = []
         var announcement = []
         var vote_info = {}
         var empty = 0
         
         // info
-        for( const [index , user_stage] of global.game_list[room_name]["information"].entries()){
+        for( const [index , user_stage] of data["information"].entries()){
             // died player can't get info
-            if(user_stage['user'].includes(user_id) && global.game_list[room_name]['player'][user_id]['user_state'] != "died"){
+            if(user_stage['user'].includes(user_id) && data['player'][user_id]['user_state'] != "died"){
                 information.push(user_stage)
             }
         }
 
         // anno
-        for( const [index , user_stage] of global.game_list[room_name]["announcement"].entries()){
+        for( const [index , user_stage] of data["announcement"].entries()){
             
             // died seer can't get role_info 
             // died werewolf can get werewolf_dialogue
-            if((user_stage['allow'] == user_id && global.game_list[room_name]['player'][user_id]['user_state'] != "died") || 
+            if((user_stage['allow'] == user_id && data['player'][user_id]['user_state'] != "died") || 
                 user_stage['allow'] == -1 || (Array.isArray(user_stage['allow']) && user_stage['allow'].includes(user_id)))
                 announcement.push({
                     'user' : user_stage["user"],
@@ -499,27 +512,27 @@ module.exports = {
         // empty 1 = wolf vote (realtime and last stage)
         // empty 2 = day vote (last stage)
         // empty = 1 wolf vote => only werewolf can get vote info
-        if(global.game_list[room_name]['empty'] == 1 && global.game_list[room_name]['player'][user_id]['user_role'] == 'werewolf'){
+        if(data['empty'] == 1 && data['player'][user_id]['user_role'] == 'werewolf'){
             
             // werewolf stage => realtime 
-            if(global.game_list[room_name]['stage'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
-                vote_info = global.game_list[room_name]['vote_info'] , empty = 1
+            if(data['stage'].split('-')[2] == "werewolf" && config.werewolf_realtime_vote_info == 1)
+                vote_info = data['vote_info'] , empty = 1
             // last stage werewolf vote info (last stage send to front empty = 2)
             else
-                vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+                vote_info = data['prev_vote'] , empty = 2
         }
         // empty = 2 all player can get vote info
-        else if(global.game_list[room_name]['empty'] == 2)
-            vote_info = global.game_list[room_name]['prev_vote'] , empty = 2
+        else if(data['empty'] == 2)
+            vote_info = data['prev_vote'] , empty = 2
 
 
         var info = {
-            stage : global.game_list[room_name]['stage'],
-            stage_description : global.game_list[room_name]['stage_description'],
+            stage : data['stage'],
+            stage_description : data['stage_description'],
             announcement : announcement,
             information : information,
-            agent_info : global.game_list[room_name]['agent_info'],
-            timer : global.game_list[room_name]['timer'],            
+            agent_info : data['agent_info'],
+            timer : data['timer'],            
             vote_info : vote_info,
             empty : empty,
         }
