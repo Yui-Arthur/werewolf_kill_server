@@ -99,7 +99,7 @@ module.exports = {
         
         if(! response.hasOwnProperty("confidence"))
             response['confidence'] = {"info" : Array(parseInt(global.game_list[room_name]['player_num'])).fill("-0.01")};
-                    
+
         for(const [player_id , guess_role] of response['guess_roles']['info'].entries()){
             // console.log(global.mapping_keywords[guess_role] , global.game_list[room_name]['player'][player_id]['user_role'])
             
@@ -109,8 +109,11 @@ module.exports = {
             // info guess roles format
             ret_guess_roles[player_id] = [guess_role , config.role_en2ch[actual_role] , parseFloat((parseFloat(response['confidence']["info"][player_id]) * 100).toFixed(2))]
 
-            // can't find key_word or current player is agent
-            if(! global.mapping_keywords.hasOwnProperty(guess_role) || global.room_list[room_name]['room_user'].indexOf(agent_name) == player_id)
+            // current player is agent
+            if(global.room_list[room_name]['room_user'].indexOf(agent_name) == player_id)
+                ret_guess_roles[player_id][0] = "-----" , ret_guess_roles[player_id].push(1)
+            // can't find key_word 
+            else if(! global.mapping_keywords.hasOwnProperty(guess_role))
                 ret_guess_roles[player_id].push(0)
             // All correct
             else if(agent_guess == actual_role)
