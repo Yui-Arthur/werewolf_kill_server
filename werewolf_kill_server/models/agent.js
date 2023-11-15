@@ -2,6 +2,7 @@ var grpc = require('@grpc/grpc-js');
 var agent = require('./proto')["agent"]
 var jwt_op = require('./jwt')
 var config = require('../conf')
+var fs = require('fs');
 
 module.exports = {
 
@@ -31,6 +32,7 @@ module.exports = {
         const client = new agent(config.agent_server_ip, grpc.credentials.createInsecure());
 
         agent_type = agent_setting['agent_type']
+        agent_type = "simple_agent"
         agent_name = agent_setting['agent_name']
         api_json = agent_setting['api_json']
         color = agent_setting['color']
@@ -57,7 +59,14 @@ module.exports = {
             }
             else{
                 console.log(`[${new Date(Date.now())}] - create agent ${agent_name} success ID : ${response["agentID"]}`) 
-                global.room_list[room_name]['agent'][agent_name] = response["agentID"]
+                global.room_list[room_name]['agent'][agent_name] = {
+                    "ID" : response["agentID"],
+                    "type" : agent_type,
+                    "roles" : "",
+                    "guess_roles_record" : [],
+                    "token_used" : 0,
+                    
+                }
                 return route_back({status: true,  log:"ok" , agentID : response["agentID"] })
                 
             }                    
@@ -128,9 +137,16 @@ module.exports = {
         var acc = parseFloat((acc_cnt / (parseInt(global.game_list[room_name]['player_num'])-1) * 100).toFixed(2))
         var token_used = parseInt(response['token_used']['info'])
 
+        // save the agent info
+        global.game_list[room_name]['agent'][agent_name]["token_used"] = token_used
+        if(response.hasOwnProperty('updated') && response['updated']['info'][0] == "1")
+            global.game_list[room_name]['agent'][agent_name]["guess_roles_record"].push(acc)
+            
+    
         delete response['token_used']
         delete response['guess_roles']
         delete response['confidence']
+        delete response['updated']
 
         for(const [key , value] of Object.entries(response))
             response[key] = value["info"][0]
@@ -151,11 +167,11 @@ module.exports = {
         const client = new agent(config.agent_server_ip, grpc.credentials.createInsecure());
         if(! global.grpc_server_check['status']['agent'])
             return 
-
-        for(const [agent_name,agent_id] of Object.entries(global.game_list[room_name]['agent'])){
-
+        
+        for(const [agent_name,agent_info] of Object.entries(global.game_list[room_name]['agent'])){
+            agent_id = agent_info['ID']
             client.get_agent_info({agentID : agent_id} , function(err, response){
-    
+                
                 if(err){
                     console.log(`[${new Date(Date.now())}] - get agent ${agent_name} info failed , ${err.message}`) 
                 }
@@ -166,6 +182,22 @@ module.exports = {
             });
         }
 
+    },
+    
+    save_agent_game_results : async function(room_name , rusult){
+        for(const [agent_name, agent_info] of Object.entries(global.game_list[room_name]['agent'])){
+            var agent_data = JSON.stringify({
+                "room" : room_name ,
+                ...agent_info,
+                /* -1 not end
+                * 0 good win
+                * 1 bad win
+                */
+               "game_result" : rusult
+            });
+            fs.appendFileSync(config.agent_record_path, agent_data + "\n");
+        }
+        console.log(`[${new Date(Date.now())}] - saving ${room_name} game info success`) 
     }
-
+    
 }

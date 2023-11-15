@@ -4,6 +4,7 @@ var room = require('./room')
 var grpc = require('@grpc/grpc-js');
 var werewolf_kill = require('./proto')["werewolf"]
 var agent = require('./proto')["agent"]
+var agent_model = require('./agent')
 var fs = require('fs');
 
 
@@ -46,7 +47,8 @@ module.exports = {
 
     get_vote_info: async function(room_name , current_stage , vote_func , copy_to_prev = false){
         // grpc vote_info func
-
+        if(!global.game_list.hasOwnProperty(room_name))
+            return
         if(current_stage !=  global.game_list[room_name]['stage'])
             return
 
@@ -108,7 +110,7 @@ module.exports = {
 
         clearTimeout(global.game_timer[room_name]['timer'])
         global.game_timer[room_name]['end_time'] = Date.now()
-        this.next_stage(room_name , this.next_stage , this.get_vote_info , this.game_over)
+        this.next_stage(room_name , this.next_stage , this.get_vote_info , this.game_over , agent_model.save_agent_game_results)
 
         // save log
         var data = JSON.stringify({
@@ -120,7 +122,10 @@ module.exports = {
         return{status: true,  log:"ok"}
     },
 
-    game_over : async function(room_name){
+    game_over : async function(room_name , save_agent_data_func , result){
+        // save agent info
+        if(global.game_list[room_name]['save_agent_data'])
+            await save_agent_data_func(room_name,result)
         // game over del all game info
         clearInterval(global.game_timer[room_name]['agent_info_timer'])
         delete global.game_list[room_name]
@@ -138,7 +143,7 @@ module.exports = {
         }
     },
 
-    next_stage : async function(room_name , stage_func , vote_func , game_over_func){
+    next_stage : async function(room_name , stage_func , vote_func , game_over_func , save_agent_data_func){
 
         if(!global.game_list.hasOwnProperty(room_name))
             return
@@ -215,7 +220,7 @@ module.exports = {
 
                 var timer = 0
                 var wait_time = 0
-                
+                var game_result = ""
                 
                 // stage proccess
                 for(var [index , user_stage] of result['stage'].entries()){
@@ -294,6 +299,7 @@ module.exports = {
                             'description' : user_stage["description"],
                             'allow' : -1
                         })
+                        game_result = user_stage["description"]
                         // clear the info
                         global.game_list[room_name]['information'].length = 0    
                         break
@@ -345,7 +351,7 @@ module.exports = {
                 if(timer != -1){
                     timer = timer + wait_time
                     global.game_timer[room_name] = {
-                        timer : setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func) ,
+                        timer : setTimeout(stage_func , timer * 1000, room_name , stage_func , vote_func , game_over_func , save_agent_data_func) ,
                         agent_info_timer : global.game_timer[room_name]['agent_info_timer'],
                         end_time : Date.now() + timer * 1000,
                     } 
@@ -357,7 +363,7 @@ module.exports = {
                 // end game
                 else{
                     // after 10 second => reset the game room 
-                    setTimeout(game_over_func , 10 * 1000 , room_name) 
+                    setTimeout(game_over_func , 10 * 1000 , room_name , save_agent_data_func , game_result) 
                     global.game_list[room_name]['timer'] = 10
                 }
             }

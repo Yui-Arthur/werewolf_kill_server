@@ -39,5 +39,20 @@ router.route('/api/agent/:room_name/:user_name/:agent_name')
         }
     })
 
+router.route('/api/agent/:room_name/:save_record_or_not')
+    .get(async function (req, res){
+        try{
+            if(global.game_list.hasOwnProperty(req.params.room_name)){
+                global.game_list[req.params.room_name]['save_agent_data'] = (req.params.save_record_or_not === "1")
+                res.sendStatus(200)
+            }
+            else
+                res.sendStatus(500)
+                
+        } catch(e){
+            console.log(e);
+            res.sendStatus(500)
+        }
+    })
 
 module.exports = router;
