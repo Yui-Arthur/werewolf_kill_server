@@ -341,6 +341,32 @@ module.exports = {
             "last_used" : Date.now()
         }
 
+        global.room_list["EMPTY"] = {
+            "room_name": "EMPTY",
+            "room_leader": "yui",
+            "room_user": [],
+            "user_color" : [],
+            "agent" : {},
+            "room_state" : "ready",
+            "game_setting": config.default_setting[7],
+            "last_used" : Date.now()
+        }
+
+        global.room_list["FULL"] = {
+            "room_name": "FULL",
+            "room_leader": "A",
+            "room_user": [
+                "A","B","C","D","E","F","G"
+            ],
+            "user_color" : [
+                "#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" , "#93c5fd"
+            ],
+            "agent" : {},
+            "room_state" : "ready",
+            "game_setting": config.default_setting[7],
+            "last_used" : Date.now()
+        }
+
         for(var i = 0; i <5; i++){
             for(var j = 5; j <= 6 ; j++)
                 global.room_list[`TESTROOM_${i}_${j}`] = {
