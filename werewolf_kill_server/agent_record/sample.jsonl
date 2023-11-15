@@ -1,0 +1,6 @@
+{"123456":123456,"room":"N82ZMEFK","ID":10,"type":"simple_agent","roles":"","guess_roles_record":[],"token_used":0,"game_result":"好人陣營獲勝"}
+{"room":"B4QSUH8B","ID":1,"type":"simple_agent","roles":"","guess_roles_record":[],"token_used":123456,"role":"village","game_result":"好人陣營獲勝"}
+{"room":"VFW92Q2O","ID":2,"type":"simple_agent","roles":"witch","guess_roles_record":[],"token_used":123456,"game_result":"好人陣營獲勝"}
+{"room":"CXGK3F80","ID":1,"type":"simple_agent","roles":"village","guess_roles_record":[],"token_used":123456,"game_result":"遊戲結束 村民全死 壞人獲勝"}
+{"room":"YSQ1TOF3","ID":1,"type":"simple_agent","roles":"village","guess_roles_record":[41.67,41.67],"token_used":123456,"game_result":"遊戲結束 村民全死 壞人獲勝"}
+{"room":"E0RF5RR3","ID":3,"type":"simple_agent","roles":"werewolf","guess_roles_record":[41.67],"token_used":123456,"game_result":"遊戲結束 村民全死 壞人獲勝"}

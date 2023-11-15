@@ -262,11 +262,12 @@ module.exports = {
                 'player' : {},
                 'died' : {},
                 'is_handover' : false,
+                'save_agent_data' : 0,
             }
 
             // set init timer
             global.game_timer[room_name] = {
-                timer : setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over),
+                timer : setTimeout(game.next_stage , config.announcementWaitTime  * 1000 , room_name , game.next_stage , game.get_vote_info , game.game_over , agent.save_agent_game_results),
                 agent_info_timer : setInterval(agent.update_agent_info , 10 * 1000 , room_name , agent.process_agent_info),
                 end_time : Date.now() + config.announcementWaitTime  * 1000
             }
@@ -283,6 +284,12 @@ module.exports = {
                     "user_state" : "alive", 
                     "operation" : {},
                 }
+            }
+
+            // init agent info
+            for(const [agent_name,agent_info] of Object.entries(global.room_list[room_name]['agent'])){
+                agent_id = agent_info['ID']
+                global.game_list[room_name]['agent'][agent_name]['roles'] = config.indexToRole[response['role'][agent_id]]
             }
             
             global.room_list[room_name]['room_state'] = "started"
@@ -327,6 +334,32 @@ module.exports = {
             ],
             "user_color" : [
                 "#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" //, "#93c5fd"
+            ],
+            "agent" : {},
+            "room_state" : "ready",
+            "game_setting": config.default_setting[7],
+            "last_used" : Date.now()
+        }
+
+        global.room_list["EMPTY"] = {
+            "room_name": "EMPTY",
+            "room_leader": "yui",
+            "room_user": [],
+            "user_color" : [],
+            "agent" : {},
+            "room_state" : "ready",
+            "game_setting": config.default_setting[7],
+            "last_used" : Date.now()
+        }
+
+        global.room_list["FULL"] = {
+            "room_name": "FULL",
+            "room_leader": "A",
+            "room_user": [
+                "A","B","C","D","E","F","G"
+            ],
+            "user_color" : [
+                "#fda4af" , "#f9a8d4" , "#f0abfc" , "#d8b4fe" , "#c4b5fd" , "#818cf8" , "#93c5fd"
             ],
             "agent" : {},
             "room_state" : "ready",
