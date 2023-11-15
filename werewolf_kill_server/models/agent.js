@@ -32,7 +32,6 @@ module.exports = {
         const client = new agent(config.agent_server_ip, grpc.credentials.createInsecure());
 
         agent_type = agent_setting['agent_type']
-        agent_type = "simple_agent"
         agent_name = agent_setting['agent_name']
         api_json = agent_setting['api_json']
         color = agent_setting['color']
