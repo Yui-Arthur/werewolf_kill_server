@@ -356,9 +356,7 @@ module.exports = {
                         end_time : Date.now() + timer * 1000,
                     } 
                     global.game_list[room_name]['timer'] = timer 
-                    // date is ready handover tag => false
-                    global.game_list[room_name]['is_handover'] = false
-                    delete global.game_list[room_name]['last_stage']
+                    
                 }
                 // end game
                 else{
@@ -366,6 +364,10 @@ module.exports = {
                     setTimeout(game_over_func , 10 * 1000 , room_name , save_agent_data_func , game_result) 
                     global.game_list[room_name]['timer'] = 10
                 }
+
+                // date is ready handover tag => false
+                global.game_list[room_name]['is_handover'] = false
+                delete global.game_list[room_name]['last_stage']
             }
             catch(e){
                 console.log(e)
