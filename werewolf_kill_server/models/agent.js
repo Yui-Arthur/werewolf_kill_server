@@ -81,7 +81,7 @@ module.exports = {
         if(! global.grpc_server_check['status']['agent'])
             return route_back({status: false,  log:"agent server is not available"})
 
-        client.delete_agent({agentID : global.room_list[room_name]['agent'][agent_name]} , function(err, response){
+        client.delete_agent({agentID : global.room_list[room_name]['agent'][agent_name]["ID"]} , function(err, response){
 
             if(err){
                 console.log(`[${new Date(Date.now())}] - delete agent ${agent_name} failed , ${err.message}`) 
