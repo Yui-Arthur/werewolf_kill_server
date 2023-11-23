@@ -8,6 +8,7 @@ services:
       #   - "80:8001"
       volumes:
         - ./logs/api_server_logs:/usr/src/app/game_logs
+        - ./logs/agent_record:/usr/src/app/agent_record
       build:
         context: ./werewolf_kill_server
         dockerfile: dockerfile
