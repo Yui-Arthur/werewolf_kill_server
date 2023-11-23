@@ -89,6 +89,6 @@ module.exports = {
     agent_server_ip : process.env.agent_server_ip || "localhost:50052" ,
     jwt_open :  process.env.jwt_open || 0,
     werewolf_realtime_vote_info : process.env.werewolf_realtime_vote_info != undefined ? process.env.werewolf_realtime_vote_info : 1,
-    master_token : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJ5dWkiLCJyb29tX25hbWUiOiJURVNUUk9PTSIsImxlYWRlciI6dHJ1ZSwiaWF0IjoxNjkwMzc5NTM0LCJleHAiOjE2OTkwMTk1MzR9.BEmD52DuK657YQezsqNgJAwbPfl54o8Pb--Dh7VQMMA",
+    master_token : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX25hbWUiOiJBMTA5NTVQWVNZIiwicm9vbV9uYW1lIjoiQTEwOTU1UFlTWSIsImxlYWRlciI6dHJ1ZSwiaWF0IjoxNzAwNDIxMTcwLCJleHAiOjE3MDkwNjExNzB9.HuIaq2bjJVxEtqSPDYbnaP1Qtsad56JYpnd9wrC0vGQ",
     agent_record_path : process.env.agent_record_path || "agent_record/sample.jsonl",
 }
