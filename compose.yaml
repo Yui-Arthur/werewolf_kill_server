@@ -7,7 +7,6 @@ services:
       # ports:
       #   - "80:8001"
       volumes:
-        # - /home/a10955psys/werewolf_kill_server/logs:/usr/src/app/game_logs
         - ./logs/api_server_logs:/usr/src/app/game_logs
       build:
         context: ./werewolf_kill_server
@@ -17,6 +16,9 @@ services:
         agent_server_ip : "agent_server:50052"
         jwt_open : 1
         TZ : Asia/Taipei
+      logging:
+          options:
+            max-size: 5m
     werewolf_server:
       image: werewolf_server
       container_name: werewolf_server
@@ -32,11 +34,10 @@ services:
       environment:
         api_server_ip : "http://api_server:8001"
       volumes:
-        # - /home/a10955psys/werewolf_kill_server/generative_agent_with_werewolf_kill/logs:/usr/src/app/agent/logs
-        # - /home/a10955psys/werewolf_kill_server/generative_agent_with_werewolf_kill/doc/secret/:/usr/src/app/agent/doc/secret
-        # - /home/a10955psys/werewolf_kill_server/generative_agent_with_werewolf_kill/utils:/usr/src/app/agent/utils
         - ./logs/agent_logs:/usr/src/app/agent/logs
-        - ./secret/:/usr/src/app/agent/doc/secret
+        - ./logs/game_info:/usr/src/app/agent/doc/game_info
+        - ./doc/secret/:/usr/src/app/agent/doc/secret
+        - ./doc/summary/:/usr/src/app/agent/doc/summary
       deploy:
         resources:
           reservations:
@@ -44,6 +45,9 @@ services:
               - driver: nvidia
                 count: 1
                 capabilities: [gpu]
+      logging:
+        options:
+          max-size: 5m
     front:
       image: nginx
       container_name: werewolf_kill
