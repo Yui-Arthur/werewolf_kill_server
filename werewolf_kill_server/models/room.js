@@ -101,6 +101,10 @@ module.exports = {
             if(index > -1){
                 global.room_list[room_name]['room_user'].splice(index, 1)
                 global.room_list[room_name]['user_color'].splice(index, 1)
+                // check the user is not agent , is it is delete the user
+                if(global.room_list[room_name]['agent'].hasOwnProperty(user_name))
+                    agent.delete_agent(room_name , user_name , token , user_name , ()=>{})
+            
                 return {status: true,  log:"ok"}
             }
             else

@@ -85,6 +85,8 @@ module.exports = {
 
             if(err){
                 console.log(`[${new Date(Date.now())}] - delete agent ${agent_name} failed , ${err.message}`) 
+                if(global.room_list[room_name]['agent'].hasOwnProperty(user_name))
+                    console.log(`[${new Date(Date.now())}] - delete agent ${agent_name} success`) 
                 return route_back({status: false,  log:"delete agent failed"})
             }
             else{
