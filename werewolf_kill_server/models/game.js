@@ -60,7 +60,7 @@ module.exports = {
 
             if(err){
                 console.log(err)
-                // setTimeout(vote_func , 1000 , room_name , current_stage , vote_func)
+                return
             }
 
             for(const [idx , user_state] of result.state.entries()){
