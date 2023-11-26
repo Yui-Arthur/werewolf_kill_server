@@ -292,8 +292,10 @@ module.exports = {
 
             // init agent info
             for(const [agent_name,agent_info] of Object.entries(global.room_list[room_name]['agent'])){
-                agent_id = agent_info['ID']
-                global.game_list[room_name]['agent'][agent_name]['roles'] = config.indexToRole[response['role'][agent_id]]
+                // agent_id = agent_info['ID']
+                var index = global.room_list[room_name]['room_user'].indexOf(agent_name);
+                if(index != -1)
+                    global.game_list[room_name]['agent'][agent_name]['roles'] = config.indexToRole[response['role'][index]]
             }
             
             global.room_list[room_name]['room_state'] = "started"
